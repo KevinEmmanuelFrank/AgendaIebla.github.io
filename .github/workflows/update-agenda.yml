@@ -1,0 +1,49 @@
+name: Update Agenda Musicians
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    if: "!contains(github.event.head_commit.message, 'chore: update agenda musicians data')"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update musicians
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = {
+              '{ name: "Fernando", roles: ["voz apoyo"] },': '{ name: "Fernando", roles: ["voz apoyo", "dirección"] },',
+              '{ name: "Meli",     roles: ["voz apoyo"] },': '{ name: "Meli",     roles: ["voz apoyo", "dirección"] },',
+              '{ name: "Lore",     roles: ["teclado", "bajo"] },': '{ name: "Lore",     roles: ["teclado", "bajo", "G. Eléctrica"] },',
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'No se encontró la entrada esperada: {old}')
+              s = s.replace(old, new, 1)
+
+          if 'name: "Dulci"' not in s:
+              anchor = '            { name: "Iara",     roles: ["voz apoyo"] }'
+              if anchor not in s:
+                  raise SystemExit('No se encontró el punto de inserción para Dulci')
+              dulci = '            { name: "Dulci",    roles: ["proyección", "voz de apoyo", "teclado"] },\n'
+              s = s.replace(anchor, dulci + anchor, 1)
+
+          p.write_text(s, encoding='utf-8')
+
+      - name: Commit changes and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git rm .github/workflows/update-agenda.yml
+          git commit -m "chore: update agenda musicians data"
+          git push
