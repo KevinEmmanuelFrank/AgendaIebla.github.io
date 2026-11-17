@@ -31,39 +31,6 @@ function populateYearSelect() {
     select.value = String(AppState.currentYear);
 }
 
-import { AppState } from "./state.js";
-import { monthNames, getSundays as buildSundays, getLocalISODate } from "./calendar.js";
-import { initializeFirebase, signInAnonymously } from "./firebase.js";
-import { subscribeToMonth, saveMonth } from "./agendaRepository.js";
-import { renderContent, escapeHtml } from "./ui/render.js";
-
-let db;
-const getYear = () => AppState.currentYear;
-const getSundays = (month, year = getYear()) => buildSundays(month, year);
-
-function render() {
-    renderContent();
-    if (AppState.viewMode === 'edit') bindEditEvents();
-}
-
-function populateYearSelect() {
-    const select = document.getElementById('yearSelect');
-    if (!select) return;
-
-    const current = new Date().getFullYear();
-    const firstYear = Math.min(2020, current - 10);
-    const lastYear = current + 5;
-
-    select.innerHTML = '';
-    for (let year = firstYear; year <= lastYear; year++) {
-        const option = document.createElement('option');
-        option.value = String(year);
-        option.textContent = String(year);
-        select.appendChild(option);
-    }
-    select.value = String(AppState.currentYear);
-}
-
 let connectTimeout;
     function setSyncStatus(state, text) {
         const dot = document.getElementById('syncDot');
