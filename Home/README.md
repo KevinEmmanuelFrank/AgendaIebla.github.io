@@ -32,3 +32,10 @@ No se modifican las reglas ni la estructura de datos del proyecto Firebase.
 La carpeta se sirve en la ruta `/Home/` del mismo sitio. La aplicación carga módulos ES directamente desde el navegador y no necesita un paso de compilación.
 
 Antes de convertirla en la versión principal, comprobar inicio de sesión anónimo, lectura, guardado, edición, exportación y navegación entre años en el sitio publicado.
+
+
+## Fechas especiales y temas visuales
+
+Las fechas especiales se guardan como entradas adicionales en el documento del mes, usando la misma clave ISO `YYYY-MM-DD` y la estructura de agenda habitual. Cada entrada incluye los metadatos `isSpecialDate`, `specialTitle` y `visualTheme`; estos campos no afectan a las entradas dominicales existentes.
+
+La navegación mensual combina los domingos habituales con las fechas especiales. Cada fecha mantiene su propio equipo, repertorio, notas y tema visual. Los temas iniciales son Clásico, Navidad, Semana Santa/Pascua, Pentecostés y Aniversario.
