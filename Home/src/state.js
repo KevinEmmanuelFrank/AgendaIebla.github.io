@@ -5,11 +5,13 @@
 export const AppState = {
         dragHintShown: false,
         viewMode: 'view',
+        editorScreen: 'edit',
+        pendingDateKey: null,
         currentYear: new Date().getFullYear(),
         currentMonth: new Date().getMonth(),
         activeIdx: 0,
         monthData: {},
-        sundays: [],
+        agendaDates: [],
         unsubscribe: null,
         isSaving: false,
         skipNextSnapshot: 0,  // counter: skip N incoming snapshots
