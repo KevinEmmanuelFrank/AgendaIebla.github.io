@@ -5,6 +5,7 @@ import { subscribeToMonth, saveMonth, createSpecialDate } from "./agendaReposito
 import { renderContent, escapeHtml } from "./ui/render.js";
 
 let db;
+let editInputHandlerBound = false;
 const getYear = () => AppState.currentYear;
 const getSundays = (month, year = getYear()) => buildSundays(month, year);
 
@@ -341,7 +342,7 @@ async function addSpecialDate() {
     const theme = ALLOWED_VISUAL_THEMES.has(selectedTheme) ? selectedTheme : 'clasico';
     const button = document.getElementById('addSpecialDateBtn');
 
-    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateKey)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
         showAdvancedFeedback('Elegí una fecha válida para continuar.', 'error');
         return;
     }
@@ -663,21 +664,24 @@ async function addSpecialDate() {
             }
         });
 
-        document.getElementById('contentArea').addEventListener('input', (e) => {
-            const field = e.target.dataset.field;
-            if (!field || field === 'musicians') return;
-            const dateKey = AppState.agendaDates[AppState.activeIdx];
-            if (field === 'notes') {
-                AppState.monthData[dateKey].notes = e.target.value;
-                // Auto-resize
-                e.target.style.height = 'auto';
-                e.target.style.height = e.target.scrollHeight + 'px';
-            } else {
-                const idx = parseInt(e.target.dataset.idx);
-                AppState.monthData[dateKey][field][idx] = e.target.value;
-            }
-            debouncedSave();
-        });
+        if (!editInputHandlerBound) {
+            document.getElementById('contentArea').addEventListener('input', (e) => {
+                const field = e.target.dataset.field;
+                if (!field || field === 'musicians') return;
+                const dateKey = AppState.agendaDates[AppState.activeIdx];
+                if (field === 'notes') {
+                    AppState.monthData[dateKey].notes = e.target.value;
+                    // Auto-resize
+                    e.target.style.height = 'auto';
+                    e.target.style.height = e.target.scrollHeight + 'px';
+                } else {
+                    const idx = parseInt(e.target.dataset.idx);
+                    AppState.monthData[dateKey][field][idx] = e.target.value;
+                }
+                debouncedSave();
+            });
+            editInputHandlerBound = true;
+        }
 
         // Drag and drop songs
         const list = document.getElementById('list-songs');
@@ -981,6 +985,15 @@ async function addSpecialDate() {
         const d = new Date(dateKey + 'T12:00:00');
         const dayNum = d.getDate();
         const monthLabel = monthNames[AppState.currentMonth];
+        const weekdayLabel = d.toLocaleDateString('es-AR', { weekday: 'long' });
+        const specialTitle = AppState.monthData[dateKey]?.specialTitle || '';
+        const theme = AppState.monthData[dateKey]?.visualTheme || 'clasico';
+        const exportPalette = {
+            navidad: { primary: '#4ade80', secondary: '#f87171', glow: 'rgba(22,163,74,0.13)' },
+            pascua: { primary: '#c4b5fd', secondary: '#facc15', glow: 'rgba(139,92,246,0.14)' },
+            pentecostes: { primary: '#fb923c', secondary: '#ef4444', glow: 'rgba(234,88,12,0.14)' },
+            aniversario: { primary: '#facc15', secondary: '#38bdf8', glow: 'rgba(202,138,4,0.13)' }
+        }[theme] || { primary: '#22d3ee', secondary: '#a78bfa', glow: 'rgba(34,211,238,0.08)' };
 
         // Logo del footer
         const logoImg = document.querySelector('.footer img');
@@ -1008,7 +1021,7 @@ async function addSpecialDate() {
             <div style="text-align:center;padding:36px 28px 28px;background:linear-gradient(180deg,#141928 0%,#0e1220 100%);border-bottom:1px solid rgba(255,255,255,0.08);">
                 <div style="font-family:'Instrument Serif',serif;font-size:110px;font-weight:400;font-style:italic;line-height:1.1;padding-top:8px;background:linear-gradient(135deg,#22d3ee,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${dayNum}</div>
                 <div style="font-size:13px;font-weight:700;letter-spacing:0.35em;text-transform:uppercase;color:#cbd5e1;margin-top:8px;">${monthLabel} ${getYear()}</div>
-                <div style="display:inline-block;margin-top:12px;padding:5px 16px;border-radius:20px;background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.3);font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:#22d3ee;">Domingo</div>
+                <div style="display:inline-block;margin-top:12px;padding:5px 16px;border-radius:20px;background:${exportPalette.glow};border:1px solid ${exportPalette.primary};font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:${exportPalette.primary};">${escapeHtml(weekdayLabel)}${specialTitle ? " · " + escapeHtml(specialTitle) : ""}</div>
             </div>
         `;
 
@@ -1042,7 +1055,7 @@ async function addSpecialDate() {
             });
             exportHeader.remove();
             const link = document.createElement('a');
-            link.download = `IEBLA-${dayNum}-${monthNames[AppState.currentMonth].substring(0,3)}.png`;
+            link.download = `IEBLA-${dateKey}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         } catch (error) {
