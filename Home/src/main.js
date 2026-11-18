@@ -257,6 +257,182 @@ function setupRealtimeListener() {
     );
 }
 
+
+const ALLOWED_VISUAL_THEMES = new Set([
+    'clasico', 'navidad', 'pascua', 'pentecostes', 'aniversario'
+]);
+
+function showAdvancedFeedback(message, type = 'info') {
+    const feedback = document.getElementById('specialDateFeedback');
+    if (!feedback) return;
+    feedback.textContent = message;
+    feedback.className = 'advanced-feedback ' + type;
+}
+
+function bindAdvancedEvents() {
+    document.getElementById('backToEditBtn')?.addEventListener('click', () => {
+        AppState.editorScreen = 'edit';
+        render();
+    });
+
+    document.getElementById('saveAdvancedBtn')?.addEventListener('click', saveAdvancedSettings);
+    document.getElementById('addSpecialDateBtn')?.addEventListener('click', addSpecialDate);
+}
+
+async function flushPendingMonthSave() {
+    if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+    }
+    if (savePromise) await savePromise;
+    await save();
+}
+
+async function saveAdvancedSettings() {
+    const dateKey = AppState.agendaDates[AppState.activeIdx];
+    const record = AppState.monthData[dateKey];
+    const title = document.getElementById('specialTitleInput')?.value.trim() || '';
+    const selectedTheme = document.getElementById('visualThemeSelect')?.value || 'clasico';
+    const theme = ALLOWED_VISUAL_THEMES.has(selectedTheme) ? selectedTheme : 'clasico';
+    const button = document.getElementById('saveAdvancedBtn');
+
+    record.specialTitle = title;
+    record.visualTheme = theme;
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Guardando…';
+    }
+
+    try {
+        await flushPendingMonthSave();
+        if (button) button.textContent = '¡Guardado!';
+        showAdvancedFeedback('Los cambios visuales se guardaron para esta fecha.', 'success');
+        setSyncStatus('saved', '¡Guardado!');
+        setTimeout(() => {
+            const currentButton = document.getElementById('saveAdvancedBtn');
+            if (currentButton) {
+                currentButton.disabled = false;
+                currentButton.textContent = 'Guardar ajustes visuales';
+            }
+        }, 1600);
+    } catch (error) {
+        console.error('Error al guardar los cambios avanzados:', error);
+        if (button) {
+            button.disabled = false;
+            button.textContent = 'Reintentar guardado';
+        }
+        showAdvancedFeedback('No se pudieron guardar los cambios. Revisá la conexión e intentá nuevamente.', 'error');
+    }
+}
+
+async function addSpecialDate() {
+    const dateKey = document.getElementById('newSpecialDateInput')?.value || '';
+    const title = document.getElementById('newSpecialTitleInput')?.value.trim() || '';
+    const selectedTheme = document.getElementById('newSpecialThemeSelect')?.value || 'clasico';
+    const theme = ALLOWED_VISUAL_THEMES.has(selectedTheme) ? selectedTheme : 'clasico';
+    const button = document.getElementById('addSpecialDateBtn');
+
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateKey)) {
+        showAdvancedFeedback('Elegí una fecha válida para continuar.', 'error');
+        return;
+    }
+
+    const parsedDate = new Date(dateKey + 'T12:00:00');
+    if (Number.isNaN(parsedDate.getTime()) || getLocalISODate(parsedDate) !== dateKey) {
+        showAdvancedFeedback('La fecha ingresada no es válida.', 'error');
+        return;
+    }
+
+    if (!title) {
+        showAdvancedFeedback('Escribí un nombre para identificar la fecha especial.', 'error');
+        document.getElementById('newSpecialTitleInput')?.focus();
+        return;
+    }
+
+    const targetYear = parsedDate.getFullYear();
+    const targetMonth = parsedDate.getMonth();
+    if (getSundays(targetMonth, targetYear).includes(dateKey)) {
+        showAdvancedFeedback('Esa fecha ya es un domingo de la agenda. Abrí ese domingo y personalizalo desde sus Cambios avanzados.', 'error');
+        return;
+    }
+
+    if (targetYear === AppState.currentYear &&
+        targetMonth === AppState.currentMonth &&
+        AppState.monthData[dateKey]) {
+        showAdvancedFeedback('Ya existe una entrada para esa fecha.', 'error');
+        return;
+    }
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = 'Agregando…';
+    }
+
+    const dateRecord = {
+        musicians: [],
+        songs: [],
+        notes: '',
+        danza: { active: false, songs: [] },
+        isSpecialDate: true,
+        specialTitle: title,
+        visualTheme: theme
+    };
+
+    try {
+        await flushPendingMonthSave();
+        setSyncStatus('saving', 'Agregando fecha…');
+        await createSpecialDate(db, AppState.appId, dateKey, dateRecord);
+
+        const isCurrentMonth = targetYear === AppState.currentYear &&
+            targetMonth === AppState.currentMonth;
+
+        if (isCurrentMonth) {
+            AppState.monthData[dateKey] = dateRecord;
+            refreshAgendaDates(dateKey);
+            AppState.editorScreen = 'edit';
+            render();
+        } else {
+            AppState.currentYear = targetYear;
+            AppState.currentMonth = targetMonth;
+            AppState.monthData = {};
+            AppState.agendaDates = getSundays(targetMonth, targetYear);
+            AppState.activeIdx = 0;
+            AppState.pendingDateKey = dateKey;
+            AppState.editorScreen = 'edit';
+
+            const yearSelect = document.getElementById('yearSelect');
+            if (yearSelect && !Array.from(yearSelect.options).some(option => Number(option.value) === targetYear)) {
+                const option = document.createElement('option');
+                option.value = String(targetYear);
+                option.textContent = String(targetYear);
+                yearSelect.add(option);
+            }
+            if (yearSelect) yearSelect.value = String(targetYear);
+            document.getElementById('monthSelect').value = String(targetMonth);
+            document.getElementById('contentArea').innerHTML = '<div class="loading-state">Abriendo fecha especial…</div>';
+            updateTodayLabel();
+            setupRealtimeListener();
+        }
+
+        setSyncStatus('saved', 'Fecha agregada');
+    } catch (error) {
+        console.error('Error al crear la fecha especial:', error);
+        const message = error?.message || '';
+        showAdvancedFeedback(
+            message.includes('Ya existe información')
+                ? message
+                : 'No se pudo agregar la fecha especial. Verificá la conexión e intentá nuevamente.',
+            'error'
+        );
+        if (button) {
+            button.disabled = false;
+            button.textContent = 'Agregar fecha especial';
+        }
+        setSyncStatus('error', 'Error al agregar');
+    }
+}
+
 // BUG 7 FIX: sanitize HTML to prevent XSS from user-entered song/note content
     function bindEditEvents() {
         // Toggle músicos
@@ -698,6 +874,7 @@ function setupRealtimeListener() {
 
     function toggleMode() {
         AppState.viewMode = AppState.viewMode === 'view' ? 'edit' : 'view';
+        AppState.editorScreen = 'edit';
         setToggleBtn(AppState.viewMode);
         render();
         // Show drag hint on first ever entry to edit mode
@@ -730,6 +907,7 @@ function setupRealtimeListener() {
             AppState.viewMode = 'view';
             setToggleBtn('view');
         }
+        AppState.editorScreen = 'edit';
         setupRealtimeListener();
     }
 
@@ -749,6 +927,7 @@ function setupRealtimeListener() {
             AppState.viewMode = 'view';
             setToggleBtn('view');
         }
+        AppState.editorScreen = 'edit';
 
         updateTodayLabel();
         setupRealtimeListener();
