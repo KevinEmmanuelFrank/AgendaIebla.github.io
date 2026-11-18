@@ -131,7 +131,7 @@ export function escapeHtml(str) {
                 <span class="empty-label">Sin canciones</span>
                 <span class="empty-hint">Agregá canciones en modo edición</span>
             </div>`;
-        const danzaBanner = danzaActive ? `<div class="danza-banner"><span class="dot dot-emerald" style="width:8px;height:8px;flex-shrink:0;"></span>Este domingo Worshipers estará presente</div>` : '';
+        const danzaBanner = danzaActive ? `<div class="danza-banner"><span class="dot dot-emerald" style="width:8px;height:8px;flex-shrink:0;"></span>Worshipers estará presente en esta fecha</div>` : '';
 
         const notesHTML = data.notes
             ? `<div class="notes-text">${formatNotes(data.notes)}</div>`
@@ -272,7 +272,7 @@ export function escapeHtml(str) {
                         <span class="danza-toggle-label">${data.danza && data.danza.active ? 'Presente' : 'No presente'}</span>
                     </label>
                 </div>
-                <p class="danza-section-desc">¿El equipo de Worshipers acompañará este domingo?</p>
+                <p class="danza-section-desc">¿El equipo de Worshipers acompañará esta fecha?</p>
                 ${data.danza && data.danza.active ? `
                 <div class="danza-songs-list" id="danzaSongsList">
                     ${data.songs.length ? `<p class="danza-hint">Seleccioná las canciones que acompañará:</p>
@@ -292,7 +292,7 @@ export function escapeHtml(str) {
                     <div class="card-title"><div class="dot dot-amber"></div><span>Notas</span></div>
                 </div>
                 <textarea class="notes-textarea" data-field="notes" data-idx="0"
-                    placeholder="Escribí las anotaciones para este domingo…">${data.notes || ''}</textarea>
+                    placeholder="Escribí las anotaciones para esta fecha…">${data.notes || ''}</textarea>
             </div>
 
             <div class="save-row">
