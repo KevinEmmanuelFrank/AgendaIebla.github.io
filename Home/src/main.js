@@ -1,7 +1,7 @@
 import { AppState } from "./state.js";
 import { monthNames, getSundays as buildSundays, getLocalISODate } from "./calendar.js";
 import { initializeFirebase, signInAnonymously } from "./firebase.js";
-import { subscribeToMonth, saveMonth } from "./agendaRepository.js";
+import { subscribeToMonth, saveMonth, createSpecialDate } from "./agendaRepository.js";
 import { renderContent, escapeHtml } from "./ui/render.js";
 
 let db;
@@ -10,7 +10,10 @@ const getSundays = (month, year = getYear()) => buildSundays(month, year);
 
 function render() {
     renderContent();
-    if (AppState.viewMode === 'edit') bindEditEvents();
+    if (AppState.viewMode === 'edit') {
+        if (AppState.editorScreen === 'advanced') bindAdvancedEvents();
+        else bindEditEvents();
+    }
 }
 
 function populateYearSelect() {
@@ -29,6 +32,35 @@ function populateYearSelect() {
         select.appendChild(option);
     }
     select.value = String(AppState.currentYear);
+}
+
+
+function refreshAgendaDates(preferredDateKey = null) {
+    const previousDateKey = AppState.agendaDates[AppState.activeIdx];
+    const monthPrefix = `${AppState.currentYear}-${String(AppState.currentMonth + 1).padStart(2, '0')}-`;
+    const specialDates = Object.entries(AppState.monthData || {})
+        .filter(([dateKey, data]) =>
+            dateKey.startsWith(monthPrefix) &&
+            /^\d{4}-\d{2}-\d{2}$/.test(dateKey) &&
+            data && data.isSpecialDate === true
+        )
+        .map(([dateKey]) => dateKey);
+
+    AppState.agendaDates = [...new Set([
+        ...getSundays(AppState.currentMonth, AppState.currentYear),
+        ...specialDates
+    ])].sort();
+
+    const targetDateKey = preferredDateKey || previousDateKey;
+    const targetIndex = targetDateKey ? AppState.agendaDates.indexOf(targetDateKey) : -1;
+    if (targetIndex >= 0) {
+        AppState.activeIdx = targetIndex;
+    } else {
+        AppState.activeIdx = Math.min(
+            AppState.activeIdx,
+            Math.max(0, AppState.agendaDates.length - 1)
+        );
+    }
 }
 
 let connectTimeout;
@@ -125,7 +157,7 @@ function setupInitialState() {
         if (index !== -1) {
             AppState.currentYear = year;
             AppState.currentMonth = month;
-            AppState.sundays = sundays;
+            AppState.agendaDates = sundays;
             AppState.activeIdx = index;
             break;
         }
@@ -141,7 +173,7 @@ function setupInitialState() {
     if (attempts >= 12) {
         AppState.currentYear = today.getFullYear();
         AppState.currentMonth = today.getMonth();
-        AppState.sundays = getSundays(AppState.currentMonth, AppState.currentYear);
+        AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
         AppState.activeIdx = 0;
     }
 
@@ -170,7 +202,7 @@ function setupEventListeners() {
         }
     });
     document.getElementById('nextSunday').addEventListener('click', () => {
-        if (AppState.activeIdx < AppState.sundays.length - 1) {
+        if (AppState.activeIdx < AppState.agendaDates.length - 1) {
             AppState.activeIdx++;
             render();
         }
@@ -202,6 +234,8 @@ function setupRealtimeListener() {
             }
 
             AppState.monthData = monthData || {};
+            refreshAgendaDates(AppState.pendingDateKey);
+            AppState.pendingDateKey = null;
             render();
             setSyncStatus('online', 'Online');
         },
@@ -239,7 +273,7 @@ function setupRealtimeListener() {
 
         // Musicians — click on row to toggle, click on role chip to toggle role
         document.getElementById('musiciansGrid').addEventListener('click', (e) => {
-            const dateKey = AppState.sundays[AppState.activeIdx];
+            const dateKey = AppState.agendaDates[AppState.activeIdx];
             const musicians = AppState.monthData[dateKey].musicians;
 
             // Role chip click
@@ -300,7 +334,7 @@ function setupRealtimeListener() {
         const danzaCheck = document.getElementById('danzaCheck');
         if (danzaCheck) {
             danzaCheck.addEventListener('change', () => {
-                const dateKey = AppState.sundays[AppState.activeIdx];
+                const dateKey = AppState.agendaDates[AppState.activeIdx];
                 const isActive = danzaCheck.checked;
                 AppState.monthData[dateKey].danza.active = isActive;
                 if (!isActive) AppState.monthData[dateKey].danza.songs = [];
@@ -335,7 +369,7 @@ function setupRealtimeListener() {
 
         // Danza song selection (existing list on render)
         const danzaList = document.getElementById('danzaSongsList');
-        if (danzaList) bindDanzaSongEvents(danzaList, AppState.sundays[AppState.activeIdx]);
+        if (danzaList) bindDanzaSongEvents(danzaList, AppState.agendaDates[AppState.activeIdx]);
     }
 
     function bindDanzaSongEvents(container, dateKey) {
@@ -370,7 +404,7 @@ function setupRealtimeListener() {
                 const dir = moveBtn.dataset.moveDir;
                 const toIdx = dir === 'up' ? idx - 1 : idx + 1;
                 // Reuse doMove equivalent inline (doMove is scoped inside bindDeleteHandler's closure)
-                const dateKey = AppState.sundays[AppState.activeIdx];
+                const dateKey = AppState.agendaDates[AppState.activeIdx];
                 const arr = AppState.monthData[dateKey].songs;
                 if (toIdx < 0 || toIdx >= arr.length) return;
                 const [moved] = arr.splice(idx, 1);
@@ -448,7 +482,7 @@ function setupRealtimeListener() {
         document.getElementById('contentArea').addEventListener('input', (e) => {
             const field = e.target.dataset.field;
             if (!field || field === 'musicians') return;
-            const dateKey = AppState.sundays[AppState.activeIdx];
+            const dateKey = AppState.agendaDates[AppState.activeIdx];
             if (field === 'notes') {
                 AppState.monthData[dateKey].notes = e.target.value;
                 // Auto-resize
@@ -478,7 +512,7 @@ function setupRealtimeListener() {
 
         function doMove(fromIdx, toIdx) {
             if (fromIdx === toIdx || toIdx === null || toIdx === undefined) return;
-            const dateKey = AppState.sundays[AppState.activeIdx];
+            const dateKey = AppState.agendaDates[AppState.activeIdx];
             const arr = AppState.monthData[dateKey].songs;
             const [moved] = arr.splice(fromIdx, 1);
             arr.splice(toIdx, 0, moved);
@@ -567,7 +601,7 @@ function setupRealtimeListener() {
 
     const SONG_LIMIT = 12;
     function addItem(type) {
-        const dateKey = AppState.sundays[AppState.activeIdx];
+        const dateKey = AppState.agendaDates[AppState.activeIdx];
         if (type === 'songs' && AppState.monthData[dateKey].songs.length >= SONG_LIMIT) return;
         AppState.monthData[dateKey][type].push('');
         render();
@@ -603,7 +637,7 @@ function setupRealtimeListener() {
     }
 
     function removeItem(type, index) {
-        const dateKey = AppState.sundays[AppState.activeIdx];
+        const dateKey = AppState.agendaDates[AppState.activeIdx];
         AppState.monthData[dateKey][type].splice(index, 1);
         // BUG 1 FIX: si se eliminó una canción, remap los índices de danza
         if (type === 'songs') {
@@ -688,7 +722,7 @@ function setupRealtimeListener() {
         }
 
         AppState.currentMonth = Number(document.getElementById('monthSelect').value);
-        AppState.sundays = getSundays(AppState.currentMonth, AppState.currentYear);
+        AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
         AppState.activeIdx = 0;
         AppState.monthData = {};
 
@@ -707,7 +741,7 @@ function setupRealtimeListener() {
         }
 
         AppState.currentYear = Number(document.getElementById('yearSelect').value);
-        AppState.sundays = getSundays(AppState.currentMonth, AppState.currentYear);
+        AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
         AppState.activeIdx = 0;
         AppState.monthData = {};
 
@@ -744,7 +778,7 @@ function setupRealtimeListener() {
         const show = () => { els.forEach(el => el.style.display = ''); document.querySelectorAll('.no-export').forEach(el => el.style.display = ''); document.querySelectorAll('.no-export-if-empty').forEach(el => el.style.display = ''); };
 
         // Datos de la fecha actual
-        const dateKey = AppState.sundays[AppState.activeIdx];
+        const dateKey = AppState.agendaDates[AppState.activeIdx];
         const d = new Date(dateKey + 'T12:00:00');
         const dayNum = d.getDate();
         const monthLabel = monthNames[AppState.currentMonth];
