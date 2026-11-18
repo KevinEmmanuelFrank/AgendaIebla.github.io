@@ -11,8 +11,15 @@ const getSundays = (month, year = getYear()) => buildSundays(month, year);
 function render() {
     renderContent();
     if (AppState.viewMode === 'edit') {
-        if (AppState.editorScreen === 'advanced') bindAdvancedEvents();
-        else bindEditEvents();
+        if (AppState.editorScreen === 'advanced') {
+            bindAdvancedEvents();
+        } else {
+            bindEditEvents();
+            document.getElementById('advancedChangesBtn')?.addEventListener('click', () => {
+                AppState.editorScreen = 'advanced';
+                render();
+            });
+        }
     }
 }
 
@@ -216,6 +223,7 @@ function setupEventListeners() {
 
 function setupRealtimeListener() {
     if (AppState.unsubscribe) AppState.unsubscribe();
+    AppState.skipNextSnapshot = 0;
     if (!AppState.user || !db) return;
 
     setSyncStatus('saving', 'Sincronizando…');
