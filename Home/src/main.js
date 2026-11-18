@@ -186,7 +186,7 @@ function setupEventListeners() {
         if (!saveTimeout || !AppState.user) return;
         clearTimeout(saveTimeout);
         saveTimeout = null;
-        void save();
+        void save().catch(() => {});
     };
 
     window.addEventListener('beforeunload', flushPendingSave);
@@ -829,38 +829,50 @@ async function addSpecialDate() {
     }
 
     let saveTimeout;
+    let savePromise = null;
+
     function debouncedSave() {
         clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(save, 1500);
+        saveTimeout = setTimeout(() => {
+            void save().catch(() => {});
+        }, 1500);
     }
 
     async function save() {
-        if (AppState.isSaving || !AppState.user || !db) return Promise.resolve();
+        if (!AppState.user || !db) return true;
+        if (savePromise) {
+            await savePromise;
+            return true;
+        }
 
         AppState.isSaving = true;
         AppState.skipNextSnapshot++;
         setSyncStatus('saving', 'Guardando…');
 
         try {
-            await saveMonth(
+            savePromise = saveMonth(
                 db,
                 AppState.appId,
                 AppState.currentYear,
                 AppState.currentMonth,
                 AppState.monthData
             );
+            await savePromise;
             setSyncStatus('saved', '¡Guardado!');
             document.getElementById('syncStatus').classList.add('saved');
             setTimeout(() => {
                 setSyncStatus('online', 'Online');
                 document.getElementById('syncStatus').classList.remove('saved');
             }, 2000);
+            return true;
         } catch (error) {
             console.error("Error al guardar la agenda:", error);
             AppState.skipNextSnapshot = Math.max(0, AppState.skipNextSnapshot - 1);
             setSyncStatus('error', 'Error al guardar');
+            throw error;
         } finally {
             AppState.isSaving = false;
+            savePromise = null;
         }
     }
 
@@ -895,7 +907,7 @@ async function addSpecialDate() {
         if (saveTimeout) {
             clearTimeout(saveTimeout);
             saveTimeout = null;
-            void save();
+            void save().catch(() => {});
         }
 
         AppState.currentMonth = Number(document.getElementById('monthSelect').value);
@@ -915,7 +927,7 @@ async function addSpecialDate() {
         if (saveTimeout) {
             clearTimeout(saveTimeout);
             saveTimeout = null;
-            void save();
+            void save().catch(() => {});
         }
 
         AppState.currentYear = Number(document.getElementById('yearSelect').value);
