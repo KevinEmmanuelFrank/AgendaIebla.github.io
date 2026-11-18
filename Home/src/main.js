@@ -1019,7 +1019,7 @@ async function addSpecialDate() {
             </div>
             <!-- Hero: fecha grande centrada -->
             <div style="text-align:center;padding:36px 28px 28px;background:linear-gradient(180deg,#141928 0%,#0e1220 100%);border-bottom:1px solid rgba(255,255,255,0.08);">
-                <div style="font-family:'Instrument Serif',serif;font-size:110px;font-weight:400;font-style:italic;line-height:1.1;padding-top:8px;background:linear-gradient(135deg,#22d3ee,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${dayNum}</div>
+                <div style="font-family:'Instrument Serif',serif;font-size:110px;font-weight:400;font-style:italic;line-height:1.1;padding-top:8px;background:linear-gradient(135deg,${exportPalette.primary},${exportPalette.secondary});-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${dayNum}</div>
                 <div style="font-size:13px;font-weight:700;letter-spacing:0.35em;text-transform:uppercase;color:#cbd5e1;margin-top:8px;">${monthLabel} ${getYear()}</div>
                 <div style="display:inline-block;margin-top:12px;padding:5px 16px;border-radius:20px;background:${exportPalette.glow};border:1px solid ${exportPalette.primary};font-size:11px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:${exportPalette.primary};">${escapeHtml(weekdayLabel)}${specialTitle ? " · " + escapeHtml(specialTitle) : ""}</div>
             </div>
