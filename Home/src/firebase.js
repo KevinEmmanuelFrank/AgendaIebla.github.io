@@ -3,7 +3,7 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyB4dnDnojGL8NNMSxRJF4eVQvKUkdoKJM",
+    apiKey: "AIzaSyB4dnDnojGL8NNMSxRJFV4eVQvKUkdoKJM",
     authDomain: "agenda-iebla.firebaseapp.com",
     projectId: "agenda-iebla",
     storageBucket: "agenda-iebla.firebasestorage.app",
