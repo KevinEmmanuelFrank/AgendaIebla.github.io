@@ -310,3 +310,64 @@ export function escapeHtml(str) {
     }
 
     
+
+    function renderAdvanced(data, dateKey, dayNum, monthLabel, weekday) {
+        const currentTheme = normalizeTheme(data.visualTheme);
+        const optionsHTML = THEME_OPTIONS.map(option =>
+            `<option value="${option.value}" ${option.value === currentTheme ? 'selected' : ''}>${option.label}</option>`
+        ).join('');
+        const title = typeof data.specialTitle === 'string' ? data.specialTitle : '';
+
+        return `<div class="fade-in advanced-screen">
+            <div class="advanced-heading">
+                <button class="btn-back" id="backToEditBtn" type="button">← Volver a la edición</button>
+                <div class="advanced-eyebrow">Herramientas especiales</div>
+                <h2>Cambios avanzados</h2>
+                <p>${weekday} ${dayNum} de ${monthLabel} de ${AppState.currentYear}</p>
+            </div>
+
+            <section class="card advanced-card">
+                <div class="card-header">
+                    <div class="card-title"><div class="dot dot-purple"></div><span>Presentación de esta fecha</span></div>
+                </div>
+                <p class="advanced-description">Personalizá cómo se verá esta fecha en la agenda. Los músicos, las canciones y las notas no se modifican.</p>
+                <label class="advanced-field">
+                    <span>Nombre o título de la celebración</span>
+                    <input id="specialTitleInput" type="text" maxlength="70" value="${escapeHtml(title)}" placeholder="Ej. Navidad, Domingo de Resurrección…">
+                </label>
+                <label class="advanced-field">
+                    <span>Diseño visual</span>
+                    <select id="visualThemeSelect">${optionsHTML}</select>
+                </label>
+                <button class="btn-save advanced-save-btn" id="saveAdvancedBtn" type="button">Guardar ajustes visuales</button>
+            </section>
+
+            <section class="card advanced-card special-date-card">
+                <div class="card-header">
+                    <div class="card-title"><div class="dot dot-cyan"></div><span>Agregar fecha especial</span></div>
+                </div>
+                <p class="advanced-description">Agregá una fecha fuera de los domingos habituales, por ejemplo un sábado. Aparecerá en la navegación de ese mes y tendrá su propia agenda.</p>
+                <label class="advanced-field">
+                    <span>Fecha</span>
+                    <input id="newSpecialDateInput" type="date">
+                </label>
+                <label class="advanced-field">
+                    <span>Nombre de la fecha</span>
+                    <input id="newSpecialTitleInput" type="text" maxlength="70" placeholder="Ej. Sábado de preparación, Encuentro especial…">
+                </label>
+                <label class="advanced-field">
+                    <span>Diseño visual</span>
+                    <select id="newSpecialThemeSelect">
+                        <option value="clasico">Clásico (original)</option>
+                        <option value="navidad">Navidad</option>
+                        <option value="pascua">Semana Santa / Pascua</option>
+                        <option value="pentecostes">Pentecostés</option>
+                        <option value="aniversario">Aniversario</option>
+                    </select>
+                </label>
+                <button class="btn-special-date" id="addSpecialDateBtn" type="button">＋ Agregar fecha especial</button>
+                <p class="advanced-footnote">Cada fecha conserva su propio equipo, repertorio, notas y diseño.</p>
+                <div class="advanced-feedback" id="specialDateFeedback" aria-live="polite"></div>
+            </section>
+        </div>`;
+    }
