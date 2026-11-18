@@ -15,24 +15,44 @@ export function escapeHtml(str) {
         return escapeHtml(text);
     }
 
+    const THEME_OPTIONS = [
+        { value: 'clasico', label: 'Clásico (original)' },
+        { value: 'navidad', label: 'Navidad' },
+        { value: 'pascua', label: 'Semana Santa / Pascua' },
+        { value: 'pentecostes', label: 'Pentecostés' },
+        { value: 'aniversario', label: 'Aniversario' }
+    ];
+    const VALID_THEMES = new Set(THEME_OPTIONS.map(option => option.value));
+
+    function normalizeTheme(theme) {
+        return VALID_THEMES.has(theme) ? theme : 'clasico';
+    }
+
+    function formatWeekday(dateKey) {
+        const value = new Date(dateKey + 'T12:00:00')
+            .toLocaleDateString('es-AR', { weekday: 'long' });
+        return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
     export function renderContent() {
-        const dateKey = AppState.sundays[AppState.activeIdx];
+        const dateKey = AppState.agendaDates[AppState.activeIdx];
         if (!dateKey) return;
         ensureData(dateKey);
         const data = AppState.monthData[dateKey];
         const d = new Date(dateKey + "T12:00:00");
         const dayNum = d.getDate();
         const monthLabel = monthNames[AppState.currentMonth];
+        const weekday = formatWeekday(dateKey);
 
-        // Badge: 'next' only for the single next sunday globally, 'past' for all past ones
         const today = new Date(); today.setHours(0,0,0,0);
         const todayISO = getLocalISODate(today);
-        const sunday = new Date(dateKey + "T00:00:00");
+        const selectedDate = new Date(dateKey + "T00:00:00");
         let badge = null;
-        if (sunday < today) {
+        if (data.isSpecialDate === true) {
+            badge = 'special';
+        } else if (selectedDate < today) {
             badge = 'past';
         } else if (AppState.currentYear === today.getFullYear()) {
-            // Only mark the next Sunday as "Próximo" while viewing the current year.
             let nextSundayGlobal = null;
             for (let m = 0; m < 12; m++) {
                 const found = getSundays(m, AppState.currentYear).find(s => s >= todayISO);
@@ -45,13 +65,13 @@ export function escapeHtml(str) {
 
         document.getElementById('contentArea').innerHTML =
             AppState.viewMode === 'view'
-                ? renderView(data, dayNum, monthLabel, badge)
-                : renderEdit(data, dayNum, monthLabel, badge);
+                ? renderView(data, dayNum, monthLabel, badge, dateKey, weekday)
+                : AppState.editorScreen === 'advanced'
+                    ? renderAdvanced(data, dateKey, dayNum, monthLabel, weekday)
+                    : renderEdit(data, dayNum, monthLabel, badge, dateKey, weekday);
 
-
-        // Update arrow button disabled states
         document.getElementById('prevSunday').disabled = AppState.activeIdx === 0;
-        document.getElementById('nextSunday').disabled = AppState.activeIdx === AppState.sundays.length - 1;
+        document.getElementById('nextSunday').disabled = AppState.activeIdx === AppState.agendaDates.length - 1;
     }
 
     export function ensureData(dateKey) {
@@ -91,7 +111,7 @@ export function escapeHtml(str) {
         return `<span class="tag-name">${m.name}</span><span class="tag-roles">${m.roles.map(cap).join(' / ')}</span>`;
     }
 
-    function renderView(data, dayNum, monthLabel, badge) {
+    function renderView(data, dayNum, monthLabel, badge, dateKey, weekday) {
         const musiciansHTML = data.musicians.map(m => `<span class="tag">${musicianLabel(m)}</span>`).join('');
 
         const danzaActive = data.danza && data.danza.active;
@@ -122,11 +142,15 @@ export function escapeHtml(str) {
             </div>`;
 
         const pastClass = badge === 'past' ? ' view-past' : '';
-        return `<div class="fade-in${pastClass}">
+        const theme = normalizeTheme(data.visualTheme);
+        const eventTitle = typeof data.specialTitle === 'string' ? data.specialTitle.trim() : '';
+        return `<div class="agenda-theme theme-${theme} fade-in${pastClass}">
             <div class="view-date-hero no-export">
                 <div class="view-day-num">${dayNum}</div>
+                <div class="view-weekday-label">${weekday}</div>
                 <div class="view-month-label">${monthLabel} ${AppState.currentYear}</div>
-                ${badge === 'next' ? '<div class="date-badge next no-export"><span class="badge-dot"></span>Próximo</div>' : badge === 'past' ? '<div class="date-badge past no-export"><span class="badge-dot"></span>Pasado</div>' : ''}
+                ${eventTitle ? `<div class="special-event-title">${escapeHtml(eventTitle)}</div>` : ''}
+                ${badge === 'special' ? '<div class="date-badge special no-export"><span class="badge-dot"></span>Fecha especial</div>' : badge === 'next' ? '<div class="date-badge next no-export"><span class="badge-dot"></span>Próximo</div>' : badge === 'past' ? '<div class="date-badge past no-export"><span class="badge-dot"></span>Pasado</div>' : ''}
                 <div class="view-date-rule"></div>
             </div>
             <div class="card card-cyan">
@@ -160,7 +184,7 @@ export function escapeHtml(str) {
         </div>`;
     }
 
-    function renderEdit(data, dayNum, monthLabel, badge) {
+    function renderEdit(data, dayNum, monthLabel, badge, dateKey, weekday) {
         // Musicians — flat list
         const musicianRows = AppState.musiciansConfig.map(cfg => {
             const existing = data.musicians.find(m => m.name === cfg.name);
@@ -206,8 +230,9 @@ export function escapeHtml(str) {
             <!-- FECHA -->
             <div style="text-align:center; margin-bottom:24px;">
                 <div class="edit-date-num" style="font-family:'Instrument Serif',serif; font-size:88px; font-weight:400; font-style:italic; line-height:1; background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">${dayNum}</div>
-                <div style="font-size:11px; font-weight:700; letter-spacing:0.35em; text-transform:uppercase; color:var(--text-secondary); margin-top:4px;">${monthLabel} ${AppState.currentYear}</div>
-                ${badge === 'next' ? '<div class="date-badge next no-export"><span class="badge-dot"></span>Próximo</div>' : badge === 'past' ? '<div class="date-badge past no-export"><span class="badge-dot"></span>Pasado</div>' : ''}
+                <div style="font-size:11px; font-weight:700; letter-spacing:0.35em; text-transform:uppercase; color:var(--text-secondary); margin-top:4px;">${weekday} · ${monthLabel} ${AppState.currentYear}</div>
+                ${data.specialTitle ? `<div class="special-event-title edit-special-title">${escapeHtml(data.specialTitle)}</div>` : ''}
+                ${data.isSpecialDate ? '<div class="date-badge special"><span class="badge-dot"></span>Fecha especial</div>' : badge === 'next' ? '<div class="date-badge next no-export"><span class="badge-dot"></span>Próximo</div>' : badge === 'past' ? '<div class="date-badge past no-export"><span class="badge-dot"></span>Pasado</div>' : ''}
             </div>
             <!-- MÚSICOS -->
             <div class="card card-cyan" style="margin-bottom:16px">
@@ -273,6 +298,13 @@ export function escapeHtml(str) {
             <div class="save-row">
                 <button class="btn-save" id="manualSaveBtn">Guardar cambios</button>
                 <span class="save-hint" style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;opacity:0.7"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>Guardado automático activo</span>
+            </div>
+            <div class="advanced-trigger-row">
+                <button class="btn-advanced" id="advancedChangesBtn" type="button">
+                    <span class="btn-advanced-icon">✦</span>
+                    Cambios avanzados
+                    <span class="btn-advanced-arrow">→</span>
+                </button>
             </div>
         </div>`;
     }
