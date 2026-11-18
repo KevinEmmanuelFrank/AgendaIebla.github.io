@@ -66,23 +66,47 @@ let connectTimeout;
     }
 
     async function init() {
-    const services = initializeFirebase();
-    db = services.db;
+    let stage = 'Inicializar Firebase';
 
     try {
+        const services = initializeFirebase();
+        db = services.db;
+
+        stage = 'Iniciar sesión anónima en Firebase';
         startConnectTimeout();
         const credential = await signInAnonymously(services.auth);
         AppState.user = credential.user;
 
+        stage = 'Preparar calendario';
         setupInitialState();
         populateYearSelect();
+
+        stage = 'Preparar controles de la agenda';
         setupEventListeners();
+
+        stage = 'Conectar con Firestore';
         setupRealtimeListener();
         updateTodayLabel();
     } catch (error) {
-        console.error("No se pudo iniciar Agenda IEBLA:", error);
-        document.getElementById('contentArea').innerHTML =
-            '<div class="loading-state" style="color:#f87171">No se pudo conectar con la agenda. Verificá tu conexión e intentá nuevamente.</div>';
+        console.error(`Agenda IEBLA — error en etapa: ${stage}`, error);
+
+        const code = error?.code || 'sin código';
+        const message = error?.message || String(error);
+        const content = document.getElementById('contentArea');
+
+        content.innerHTML = `
+            <div class="loading-state" style="color:#f87171;text-align:left;line-height:1.6">
+                <strong>No se pudo iniciar la agenda.</strong>
+                <p style="margin-top:10px;color:#cbd5e1">Etapa: ${escapeHtml(stage)}</p>
+                <p style="margin-top:6px;color:#cbd5e1">Código: ${escapeHtml(code)}</p>
+                <p style="margin-top:6px;color:#cbd5e1;overflow-wrap:anywhere">${escapeHtml(message)}</p>
+                <button id="retryAgendaBtn" class="btn btn-primary" style="margin-top:18px">Reintentar</button>
+            </div>
+        `;
+
+        document.getElementById('retryAgendaBtn')?.addEventListener('click', () => {
+            window.location.reload();
+        });
         setSyncStatus('error', 'Error de conexión');
     }
 }
@@ -182,8 +206,19 @@ function setupRealtimeListener() {
             setSyncStatus('online', 'Online');
         },
         error => {
-            console.error("Error al sincronizar la agenda:", error);
-            setSyncStatus('error', 'Error de red');
+            console.error("Error al leer la agenda en Firestore:", error);
+            const code = error?.code || 'sin código';
+            const message = error?.message || String(error);
+            document.getElementById('contentArea').innerHTML = `
+                <div class="loading-state" style="color:#f87171;text-align:left;line-height:1.6">
+                    <strong>La conexión se inició, pero no se pudo leer la agenda.</strong>
+                    <p style="margin-top:10px;color:#cbd5e1">Código: ${escapeHtml(code)}</p>
+                    <p style="margin-top:6px;color:#cbd5e1;overflow-wrap:anywhere">${escapeHtml(message)}</p>
+                    <button id="retryAgendaBtn" class="btn btn-primary" style="margin-top:18px">Reintentar</button>
+                </div>
+            `;
+            document.getElementById('retryAgendaBtn')?.addEventListener('click', () => window.location.reload());
+            setSyncStatus('error', 'Error de lectura');
         }
     );
 }
