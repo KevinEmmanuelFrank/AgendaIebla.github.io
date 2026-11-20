@@ -301,6 +301,11 @@ async function navigateToUpcomingSunday() {
     const targetMonth = targetDate.getMonth();
 
     AppState.calendarDisplay = 'agenda';
+    if (AppState.viewMode === 'edit') {
+        AppState.viewMode = 'view';
+        setToggleBtn('view');
+    }
+    AppState.editorScreen = 'edit';
 
     if (targetYear === AppState.currentYear && targetMonth === AppState.currentMonth) {
         const index = AppState.agendaDates.indexOf(targetDateKey);
@@ -333,11 +338,6 @@ async function navigateToUpcomingSunday() {
     AppState.pendingDateKey = targetDateKey;
     pendingMonthEdge = null;
 
-    if (AppState.viewMode === 'edit') {
-        AppState.viewMode = 'view';
-        setToggleBtn('view');
-    }
-    AppState.editorScreen = 'edit';
     updateTodayLabel();
 
     const content = document.getElementById('contentArea');
