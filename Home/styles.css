@@ -1634,3 +1634,215 @@ body.theme-pentecostes .footer::after, body.theme-aniversario .footer::after {
     .page-preview-shell .brand-icon { width:36px; height:36px; }
     .page-preview-shell .header-controls select { min-width:0; width:auto; flex:1 1 0; }
 }
+
+
+/* Navegación rápida y vista mensual */
+.nav-shortcuts {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:8px;
+}
+.nav-tool-btn {
+    min-height:34px;
+    padding:7px 13px;
+    border:1px solid var(--border-bright);
+    border-radius:999px;
+    background:var(--bg-card);
+    color:var(--text-secondary);
+    font:700 11px 'DM Sans',sans-serif;
+    letter-spacing:.04em;
+    cursor:pointer;
+    transition:background .2s,border-color .2s,color .2s,transform .2s;
+}
+.nav-tool-btn:hover:not(:disabled) {
+    color:var(--accent-cyan);
+    border-color:var(--accent-cyan);
+    background:color-mix(in srgb,var(--accent-cyan) 8%,var(--bg-card));
+}
+.nav-tool-btn:active:not(:disabled) { transform:scale(.97); }
+.nav-tool-btn:disabled { opacity:.4; cursor:not-allowed; }
+
+.month-overview { max-width:760px; margin:0 auto; }
+.month-overview-heading {
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin:2px 0 25px;
+}
+.month-overview-eyebrow {
+    margin-bottom:7px;
+    color:var(--accent-cyan);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+}
+.month-overview-heading h2 {
+    color:var(--text-primary);
+    font:400 clamp(30px,5vw,42px)/1.05 'Instrument Serif',serif;
+}
+.month-overview-heading h2 span {
+    color:var(--text-muted);
+    font:600 14px 'DM Sans',sans-serif;
+    letter-spacing:.05em;
+}
+.month-overview-heading p {
+    margin-top:9px;
+    color:var(--text-muted);
+    font-size:12px;
+    line-height:1.5;
+}
+.month-overview-count {
+    flex:0 0 auto;
+    padding:8px 12px;
+    border:1px solid var(--border-bright);
+    border-radius:12px;
+    color:var(--accent-cyan);
+    font:700 18px 'DM Sans',sans-serif;
+    text-align:center;
+}
+.month-overview-count span {
+    display:block;
+    margin-top:2px;
+    color:var(--text-muted);
+    font-size:9px;
+    font-weight:700;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+}
+.month-grid {
+    display:grid;
+    grid-template-columns:repeat(7,minmax(0,1fr));
+    gap:8px;
+}
+.month-weekday {
+    padding:0 2px 7px;
+    color:var(--text-muted);
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.1em;
+    text-align:center;
+    text-transform:uppercase;
+}
+.month-day {
+    position:relative;
+    display:flex;
+    min-width:0;
+    min-height:82px;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:7px;
+    padding:10px;
+    overflow:hidden;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:color-mix(in srgb,var(--bg-card) 62%,transparent);
+    color:var(--text-muted);
+    text-align:left;
+}
+button.month-day {
+    width:100%;
+    cursor:pointer;
+    font:inherit;
+    transition:transform .18s,border-color .18s,background .18s,box-shadow .18s;
+}
+button.month-day:hover {
+    transform:translateY(-2px);
+    border-color:var(--accent-cyan);
+    background:color-mix(in srgb,var(--accent-cyan) 8%,var(--bg-card));
+}
+button.month-day:focus-visible {
+    outline:2px solid var(--accent-cyan);
+    outline-offset:2px;
+}
+.month-day-number {
+    color:var(--text-secondary);
+    font-size:13px;
+    font-weight:700;
+    line-height:1;
+}
+.month-day.is-agenda {
+    border-color:color-mix(in srgb,var(--accent-cyan) 42%,var(--border));
+    background:color-mix(in srgb,var(--accent-cyan) 7%,var(--bg-card));
+}
+.month-day.is-agenda .month-day-number { color:var(--accent-cyan); }
+.month-day.is-special {
+    border-color:color-mix(in srgb,var(--accent-amber) 58%,var(--border));
+    background:color-mix(in srgb,var(--accent-amber) 8%,var(--bg-card));
+}
+.month-day.is-special .month-day-number { color:var(--accent-amber); }
+.month-day.is-selected {
+    box-shadow:inset 0 0 0 1px var(--accent-purple),0 0 0 1px color-mix(in srgb,var(--accent-purple) 26%,transparent);
+}
+.month-day.is-today::after {
+    content:'';
+    position:absolute;
+    top:7px;
+    right:7px;
+    width:6px;
+    height:6px;
+    border-radius:50%;
+    background:var(--accent-emerald);
+    box-shadow:0 0 8px var(--accent-emerald);
+}
+.month-day-event {
+    display:-webkit-box;
+    width:100%;
+    overflow:hidden;
+    color:var(--text-secondary);
+    font-size:10px;
+    font-weight:600;
+    line-height:1.3;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:2;
+}
+.month-day.is-special .month-day-event { color:var(--accent-amber); }
+.month-day-empty { min-height:0; padding:0; border:0; background:transparent; }
+.month-legend {
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px 20px;
+    margin-top:18px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+    color:var(--text-muted);
+    font-size:10px;
+    font-weight:600;
+}
+.month-legend span { display:inline-flex; align-items:center; gap:7px; }
+.month-legend-dot {
+    width:7px;
+    height:7px;
+    display:inline-block;
+    border-radius:50%;
+    background:var(--accent-cyan);
+}
+.month-legend-dot.special { background:var(--accent-amber); }
+.month-legend-dot.today { background:var(--accent-emerald); }
+
+@media (max-width:600px) {
+    .nav { gap:7px; }
+    .nav-center { gap:7px; }
+    .nav-shortcuts { gap:5px; }
+    .nav-tool-btn { min-height:31px; padding:6px 10px; font-size:10px; }
+    .month-overview-heading { align-items:flex-start; margin-bottom:18px; }
+    .month-overview-heading p { max-width:240px; font-size:11px; }
+    .month-overview-count { padding:7px 9px; font-size:15px; }
+    .month-grid { gap:5px; }
+    .month-day { min-height:66px; padding:7px 5px; border-radius:9px; gap:5px; }
+    .month-day-number { font-size:12px; }
+    .month-day-event { font-size:8px; line-height:1.2; }
+    .month-day-empty { min-height:0; padding:0; }
+    .month-weekday { font-size:9px; }
+    .month-legend { gap:9px 13px; font-size:9px; }
+}
+@media (max-width:380px) {
+    .nav-tool-btn { padding:6px 8px; font-size:9px; }
+    .month-grid { gap:4px; }
+    .month-day { min-height:58px; padding:6px 4px; }
+    .month-day-event { font-size:7px; }
+}
