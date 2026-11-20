@@ -39,3 +39,8 @@ Antes de convertirla en la versión principal, comprobar inicio de sesión anón
 Las fechas especiales se guardan como entradas adicionales en el documento del mes, usando la misma clave ISO `YYYY-MM-DD` y la estructura de agenda habitual. Cada entrada incluye los metadatos `isSpecialDate`, `specialTitle` y `visualTheme`; estos campos no afectan a las entradas dominicales existentes.
 
 La navegación mensual combina los domingos habituales con las fechas especiales. Cada fecha mantiene su propio equipo, repertorio, notas y tema visual. Los temas iniciales son Clásico, Navidad, Semana Santa/Pascua, Pentecostés y Aniversario.
+
+
+## Navegación y vista mensual
+
+La navegación por flechas recorre domingos y fechas especiales en orden cronológico, incluso al pasar de mes o de año. La vista mensual permite localizar las fechas programadas y abrir directamente la agenda de cada una. El acceso «Hoy» vuelve al domingo actual o al próximo domingo programado, según el día en que se consulte.
