@@ -34,12 +34,94 @@ export function escapeHtml(str) {
         return value.charAt(0).toUpperCase() + value.slice(1);
     }
 
+
+    function renderMonthOverview() {
+        const year = AppState.currentYear;
+        const month = AppState.currentMonth;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const firstWeekday = (new Date(year, month, 1).getDay() + 6) % 7;
+        const todayISO = getLocalISODate(new Date());
+        const selectedDateKey = AppState.agendaDates[AppState.activeIdx];
+        const agendaDateSet = new Set(AppState.agendaDates);
+        const weekdayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        const cells = [];
+
+        for (const label of weekdayLabels) {
+            cells.push(`<div class="month-weekday" aria-hidden="true">${label}</div>`);
+        }
+
+        for (let i = 0; i < firstWeekday; i++) {
+            cells.push('<div class="month-day month-day-empty" aria-hidden="true"></div>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            const isAgendaDate = agendaDateSet.has(dateKey);
+            const record = AppState.monthData[dateKey] || {};
+            const isSpecial = record.isSpecialDate === true;
+            const isToday = dateKey === todayISO;
+            const isSelected = dateKey === selectedDateKey;
+            const weekday = formatWeekday(dateKey);
+            const classes = [
+                'month-day',
+                isAgendaDate ? 'is-agenda' : '',
+                isSpecial ? 'is-special' : '',
+                isToday ? 'is-today' : '',
+                isSelected ? 'is-selected' : ''
+            ].filter(Boolean).join(' ');
+            const eventLabel = isSpecial
+                ? (typeof record.specialTitle === 'string' && record.specialTitle.trim()
+                    ? record.specialTitle.trim()
+                    : 'Fecha especial')
+                : 'Culto dominical';
+            const ariaLabel = isAgendaDate
+                ? `${weekday} ${day} de ${monthNames[month]}: ${eventLabel}`
+                : `${weekday} ${day} de ${monthNames[month]}`;
+            const content = `<span class="month-day-number">${day}</span>${isAgendaDate
+                ? `<span class="month-day-event">${escapeHtml(eventLabel)}</span>`
+                : ''}`;
+
+            cells.push(isAgendaDate
+                ? `<button class="${classes}" type="button" data-agenda-date="${dateKey}" aria-label="${escapeHtml(ariaLabel)}" title="${escapeHtml(ariaLabel)}">${content}</button>`
+                : `<div class="${classes}" aria-hidden="true">${content}</div>`);
+        }
+
+        const trailingCells = (7 - ((firstWeekday + daysInMonth) % 7)) % 7;
+        for (let i = 0; i < trailingCells; i++) {
+            cells.push('<div class="month-day month-day-empty" aria-hidden="true"></div>');
+        }
+
+        return `<section class="month-overview fade-in">
+            <div class="month-overview-heading">
+                <div>
+                    <div class="month-overview-eyebrow">Vista general</div>
+                    <h2>${monthNames[month]} <span>${year}</span></h2>
+                    <p>Seleccioná un domingo o una fecha especial para abrir su agenda.</p>
+                </div>
+                <div class="month-overview-count">${AppState.agendaDates.length} <span>fechas</span></div>
+            </div>
+            <div class="month-grid">${cells.join('')}</div>
+            <div class="month-legend">
+                <span><i class="month-legend-dot sunday"></i> Culto dominical</span>
+                <span><i class="month-legend-dot special"></i> Fecha especial</span>
+                <span><i class="month-legend-dot today"></i> Hoy</span>
+            </div>
+        </section>`;
+    }
+
     export function renderContent() {
         const dateKey = AppState.agendaDates[AppState.activeIdx];
         if (!dateKey) return;
         ensureData(dateKey);
         const data = AppState.monthData[dateKey];
         applyPageTheme(data);
+
+        if (AppState.viewMode === 'view' && AppState.calendarDisplay === 'month') {
+            document.getElementById('exportBtn').classList.add('hidden');
+            document.getElementById('contentArea').innerHTML = renderMonthOverview();
+            return;
+        }
+
         const d = new Date(dateKey + "T12:00:00");
         const dayNum = d.getDate();
         const monthLabel = monthNames[AppState.currentMonth];
