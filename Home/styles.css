@@ -1361,3 +1361,52 @@
     border-color: var(--theme-border);
 }
 .agenda-theme:not(.theme-clasico) .song-num { color: var(--theme-secondary); }
+
+
+/* Vista previa de presentación en Cambios avanzados */
+.btn-preview {
+    display: block;
+    width: 100%;
+    min-height: 46px;
+    margin-top: 10px;
+    padding: 12px 18px;
+    border: 1px solid rgba(167,139,250,0.42);
+    border-radius: 12px;
+    background: rgba(167,139,250,0.09);
+    color: #c4b5fd;
+    font: 700 13px 'DM Sans', sans-serif;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+.btn-preview:hover {
+    background: rgba(167,139,250,0.16);
+    border-color: rgba(167,139,250,0.75);
+}
+.advanced-preview-panel {
+    margin-top: 18px;
+    padding: 14px;
+    border: 1px solid var(--border-bright);
+    border-radius: 14px;
+    background: var(--bg-deep);
+}
+.advanced-preview-caption {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 14px;
+}
+.advanced-preview-caption strong {
+    color: var(--text-primary);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.advanced-preview-caption span {
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+.advanced-preview-panel .agenda-theme {
+    width: 100%;
+}

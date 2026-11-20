@@ -2,7 +2,7 @@ import { AppState } from "./state.js";
 import { monthNames, getSundays as buildSundays, getLocalISODate } from "./calendar.js";
 import { initializeFirebase, signInAnonymously } from "./firebase.js";
 import { subscribeToMonth, saveMonth, createSpecialDate } from "./agendaRepository.js";
-import { renderContent, escapeHtml } from "./ui/render.js";
+import { renderContent, renderDatePreview, escapeHtml } from "./ui/render.js";
 
 let db;
 let editInputHandlerBound = false;
@@ -286,6 +286,46 @@ function bindAdvancedEvents() {
 
     document.getElementById('saveAdvancedBtn')?.addEventListener('click', saveAdvancedSettings);
     document.getElementById('addSpecialDateBtn')?.addEventListener('click', addSpecialDate);
+
+    const previewButton = document.getElementById('previewAdvancedBtn');
+    previewButton?.addEventListener('click', toggleAdvancedPreview);
+
+    document.getElementById('specialTitleInput')?.addEventListener('input', refreshAdvancedPreview);
+    document.getElementById('visualThemeSelect')?.addEventListener('change', refreshAdvancedPreview);
+}
+
+
+function toggleAdvancedPreview() {
+    const panel = document.getElementById('advancedPreviewPanel');
+    const button = document.getElementById('previewAdvancedBtn');
+    if (!panel || !button) return;
+
+    panel.hidden = !panel.hidden;
+    button.textContent = panel.hidden ? '◉ Ver vista previa' : 'Ocultar vista previa';
+
+    if (!panel.hidden) refreshAdvancedPreview();
+}
+
+function refreshAdvancedPreview() {
+    const panel = document.getElementById('advancedPreviewPanel');
+    const content = document.getElementById('advancedPreviewContent');
+    if (!panel || panel.hidden || !content) return;
+
+    const dateKey = AppState.agendaDates[AppState.activeIdx];
+    const record = AppState.monthData[dateKey];
+    if (!dateKey || !record) return;
+
+    const title = document.getElementById('specialTitleInput')?.value.trim() || '';
+    const selectedTheme = document.getElementById('visualThemeSelect')?.value || 'clasico';
+    const theme = ALLOWED_VISUAL_THEMES.has(selectedTheme) ? selectedTheme : 'clasico';
+
+    const previewData = {
+        ...record,
+        specialTitle: title,
+        visualTheme: theme
+    };
+
+    content.innerHTML = renderDatePreview(previewData, dateKey);
 }
 
 async function flushPendingMonthSave() {

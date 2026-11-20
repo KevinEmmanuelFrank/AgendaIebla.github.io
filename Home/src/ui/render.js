@@ -184,6 +184,25 @@ export function escapeHtml(str) {
         </div>`;
     }
 
+    export function renderDatePreview(data, dateKey) {
+        const date = new Date(dateKey + "T12:00:00");
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dateKey + "T00:00:00");
+        const badge = data.isSpecialDate === true
+            ? 'special'
+            : selectedDate < today ? 'past' : null;
+
+        return renderView(
+            data,
+            date.getDate(),
+            monthNames[date.getMonth()],
+            badge,
+            dateKey,
+            formatWeekday(dateKey)
+        );
+    }
+
     function renderEdit(data, dayNum, monthLabel, badge, dateKey, weekday) {
         // Musicians — flat list
         const musicianRows = AppState.musiciansConfig.map(cfg => {
@@ -340,6 +359,14 @@ export function escapeHtml(str) {
                     <select id="visualThemeSelect">${optionsHTML}</select>
                 </label>
                 <button class="btn-save advanced-save-btn" id="saveAdvancedBtn" type="button">Guardar ajustes visuales</button>
+                <button class="btn-preview" id="previewAdvancedBtn" type="button">◉ Ver vista previa</button>
+                <div class="advanced-preview-panel" id="advancedPreviewPanel" hidden>
+                    <div class="advanced-preview-caption">
+                        <strong>Vista previa</strong>
+                        <span>Así se verá la fecha. Los cambios todavía no están guardados.</span>
+                    </div>
+                    <div id="advancedPreviewContent"></div>
+                </div>
             </section>
 
             <section class="card advanced-card special-date-card">
