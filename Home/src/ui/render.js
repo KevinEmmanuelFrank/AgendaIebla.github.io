@@ -330,6 +330,10 @@ export function escapeHtml(str) {
             <nav class="nav preview-nav" aria-hidden="true">
                 <button class="nav-btn" type="button" disabled><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></button>
                 <div class="nav-center">
+                    <div class="nav-shortcuts">
+                        <button class="nav-tool-btn" type="button" disabled>Hoy</button>
+                        <button class="nav-tool-btn" type="button" disabled>Vista mensual</button>
+                    </div>
                     <div class="sync-badge"><div class="sync-dot online"></div><span>Online</span></div>
                 </div>
                 <button class="nav-btn" type="button" disabled><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
