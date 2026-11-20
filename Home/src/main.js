@@ -6,6 +6,8 @@ import { renderContent, renderFullPagePreview, applyPageTheme, escapeHtml } from
 
 let db;
 let editInputHandlerBound = false;
+let pendingMonthEdge = null;
+let isNavigatingMonth = false;
 const getYear = () => AppState.currentYear;
 const getSundays = (month, year = getYear()) => buildSundays(month, year);
 
@@ -43,7 +45,7 @@ function populateYearSelect() {
 }
 
 
-function refreshAgendaDates(preferredDateKey = null) {
+function refreshAgendaDates(preferredDateKey = null, edge = null) {
     const previousDateKey = AppState.agendaDates[AppState.activeIdx];
     const monthPrefix = `${AppState.currentYear}-${String(AppState.currentMonth + 1).padStart(2, '0')}-`;
     const specialDates = Object.entries(AppState.monthData || {})
@@ -59,10 +61,14 @@ function refreshAgendaDates(preferredDateKey = null) {
         ...specialDates
     ])].sort();
 
-    const targetDateKey = preferredDateKey || previousDateKey;
+    const targetDateKey = preferredDateKey || (edge ? null : previousDateKey);
     const targetIndex = targetDateKey ? AppState.agendaDates.indexOf(targetDateKey) : -1;
     if (targetIndex >= 0) {
         AppState.activeIdx = targetIndex;
+    } else if (edge === 'first') {
+        AppState.activeIdx = 0;
+    } else if (edge === 'last') {
+        AppState.activeIdx = Math.max(0, AppState.agendaDates.length - 1);
     } else {
         AppState.activeIdx = Math.min(
             AppState.activeIdx,
@@ -204,22 +210,100 @@ function setupEventListeners() {
     });
 
     document.getElementById('prevSunday').addEventListener('click', () => {
-        if (AppState.activeIdx > 0) {
-            AppState.activeIdx--;
-            render();
-        }
+        void navigateDate(-1);
     });
     document.getElementById('nextSunday').addEventListener('click', () => {
-        if (AppState.activeIdx < AppState.agendaDates.length - 1) {
-            AppState.activeIdx++;
-            render();
-        }
+        void navigateDate(1);
     });
     document.getElementById('toggleModeBtn').addEventListener('click', toggleMode);
     document.getElementById('monthSelect').addEventListener('change', changeMonth);
     document.getElementById('yearSelect').addEventListener('change', changeYear);
     document.getElementById('exportBtn').addEventListener('click', exportImage);
     bindDeleteHandler();
+}
+
+function setNavigationButtonsDisabled(disabled) {
+    document.getElementById('prevSunday').disabled = disabled;
+    document.getElementById('nextSunday').disabled = disabled;
+}
+
+function syncCalendarSelectors() {
+    const monthSelect = document.getElementById('monthSelect');
+    const yearSelect = document.getElementById('yearSelect');
+
+    if (monthSelect) monthSelect.value = String(AppState.currentMonth);
+    if (yearSelect) {
+        const targetYear = String(AppState.currentYear);
+        const yearExists = Array.from(yearSelect.options)
+            .some(option => option.value === targetYear);
+
+        if (!yearExists) {
+            const option = document.createElement('option');
+            option.value = targetYear;
+            option.textContent = targetYear;
+            const nextOption = Array.from(yearSelect.options)
+                .find(existing => Number(existing.value) > AppState.currentYear);
+
+            if (nextOption) yearSelect.insertBefore(option, nextOption);
+            else yearSelect.appendChild(option);
+        }
+
+        yearSelect.value = targetYear;
+    }
+}
+
+async function navigateDate(direction) {
+    if (isNavigatingMonth) return;
+
+    const nextIndex = AppState.activeIdx + direction;
+    if (nextIndex >= 0 && nextIndex < AppState.agendaDates.length) {
+        AppState.activeIdx = nextIndex;
+        render();
+        return;
+    }
+
+    isNavigatingMonth = true;
+    setNavigationButtonsDisabled(true);
+
+    const hadPendingDebouncedSave = Boolean(saveTimeout);
+    if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+    }
+
+    try {
+        if (savePromise) await savePromise;
+        if (hadPendingDebouncedSave) await save();
+    } catch (error) {
+        console.error('No se pudo guardar antes de cambiar de mes:', error);
+        isNavigatingMonth = false;
+        setNavigationButtonsDisabled(false);
+        setSyncStatus('error', 'No se pudo guardar');
+        return;
+    }
+
+    const adjacentMonth = new Date(AppState.currentYear, AppState.currentMonth + direction, 1);
+    AppState.currentYear = adjacentMonth.getFullYear();
+    AppState.currentMonth = adjacentMonth.getMonth();
+    syncCalendarSelectors();
+
+    AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
+    AppState.activeIdx = direction > 0 ? 0 : AppState.agendaDates.length - 1;
+    AppState.monthData = {};
+    AppState.pendingDateKey = null;
+    pendingMonthEdge = direction > 0 ? 'first' : 'last';
+
+    if (AppState.viewMode === 'edit') {
+        AppState.viewMode = 'view';
+        setToggleBtn('view');
+    }
+    AppState.editorScreen = 'edit';
+    updateTodayLabel();
+
+    const content = document.getElementById('contentArea');
+    if (content) content.innerHTML = '<div class="loading-state">Cargando agenda…</div>';
+
+    setupRealtimeListener();
 }
 
 function setupRealtimeListener() {
@@ -243,12 +327,18 @@ function setupRealtimeListener() {
             }
 
             AppState.monthData = monthData || {};
-            refreshAgendaDates(AppState.pendingDateKey);
+            refreshAgendaDates(AppState.pendingDateKey, pendingMonthEdge);
             AppState.pendingDateKey = null;
+            pendingMonthEdge = null;
+            isNavigatingMonth = false;
+            setNavigationButtonsDisabled(false);
             render();
             setSyncStatus('online', 'Online');
         },
         error => {
+            pendingMonthEdge = null;
+            isNavigatingMonth = false;
+            setNavigationButtonsDisabled(false);
             console.error("Error al leer la agenda en Firestore:", error);
             const code = error?.code || 'sin código';
             const message = error?.message || String(error);
@@ -923,6 +1013,7 @@ async function addSpecialDate() {
     function debouncedSave() {
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
+            saveTimeout = null;
             void save().catch(() => {});
         }, 1500);
     }
@@ -1003,6 +1094,10 @@ async function addSpecialDate() {
         AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
         AppState.activeIdx = 0;
         AppState.monthData = {};
+        AppState.pendingDateKey = null;
+        pendingMonthEdge = 'first';
+        isNavigatingMonth = true;
+        setNavigationButtonsDisabled(true);
 
         if (AppState.viewMode === 'edit') {
             AppState.viewMode = 'view';
@@ -1023,6 +1118,10 @@ async function addSpecialDate() {
         AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
         AppState.activeIdx = 0;
         AppState.monthData = {};
+        AppState.pendingDateKey = null;
+        pendingMonthEdge = 'first';
+        isNavigatingMonth = true;
+        setNavigationButtonsDisabled(true);
 
         if (AppState.viewMode === 'edit') {
             AppState.viewMode = 'view';
