@@ -13,6 +13,15 @@ const getSundays = (month, year = getYear()) => buildSundays(month, year);
 
 function render() {
     renderContent();
+
+    const monthViewButton = document.getElementById('monthViewBtn');
+    if (monthViewButton) {
+        const isMonthView = AppState.calendarDisplay === 'month' && AppState.viewMode === 'view';
+        monthViewButton.textContent = isMonthView ? 'Ver agenda' : 'Vista mensual';
+        monthViewButton.setAttribute('aria-pressed', String(isMonthView));
+        monthViewButton.disabled = AppState.viewMode !== 'view';
+    }
+
     if (AppState.viewMode === 'edit') {
         if (AppState.editorScreen === 'advanced') {
             bindAdvancedEvents();
@@ -216,6 +225,23 @@ function setupEventListeners() {
         void navigateDate(1);
     });
     document.getElementById('toggleModeBtn').addEventListener('click', toggleMode);
+    document.getElementById('todayBtn').addEventListener('click', () => {
+        void navigateToUpcomingSunday();
+    });
+    document.getElementById('monthViewBtn').addEventListener('click', () => {
+        if (AppState.viewMode !== 'view') return;
+        AppState.calendarDisplay = AppState.calendarDisplay === 'month' ? 'agenda' : 'month';
+        render();
+    });
+    document.getElementById('contentArea').addEventListener('click', event => {
+        const dateButton = event.target.closest('[data-agenda-date]');
+        if (!dateButton || AppState.calendarDisplay !== 'month') return;
+        const index = AppState.agendaDates.indexOf(dateButton.dataset.agendaDate);
+        if (index < 0) return;
+        AppState.activeIdx = index;
+        AppState.calendarDisplay = 'agenda';
+        render();
+    });
     document.getElementById('monthSelect').addEventListener('change', changeMonth);
     document.getElementById('yearSelect').addEventListener('change', changeYear);
     document.getElementById('exportBtn').addEventListener('click', exportImage);
@@ -252,6 +278,73 @@ function syncCalendarSelectors() {
     }
 }
 
+
+async function flushPendingSaveBeforeNavigation() {
+    const hadPendingDebouncedSave = Boolean(saveTimeout);
+    if (saveTimeout) {
+        clearTimeout(saveTimeout);
+        saveTimeout = null;
+    }
+
+    if (savePromise) await savePromise;
+    if (hadPendingDebouncedSave) await save();
+}
+
+async function navigateToUpcomingSunday() {
+    if (isNavigatingMonth) return;
+
+    const targetDate = new Date();
+    targetDate.setHours(12, 0, 0, 0);
+    targetDate.setDate(targetDate.getDate() + ((7 - targetDate.getDay()) % 7));
+    const targetDateKey = getLocalISODate(targetDate);
+    const targetYear = targetDate.getFullYear();
+    const targetMonth = targetDate.getMonth();
+
+    AppState.calendarDisplay = 'agenda';
+
+    if (targetYear === AppState.currentYear && targetMonth === AppState.currentMonth) {
+        const index = AppState.agendaDates.indexOf(targetDateKey);
+        if (index >= 0) {
+            AppState.activeIdx = index;
+            render();
+            return;
+        }
+    }
+
+    isNavigatingMonth = true;
+    setNavigationButtonsDisabled(true);
+
+    try {
+        await flushPendingSaveBeforeNavigation();
+    } catch (error) {
+        console.error('No se pudo guardar antes de volver a la fecha actual:', error);
+        isNavigatingMonth = false;
+        setNavigationButtonsDisabled(false);
+        setSyncStatus('error', 'No se pudo guardar');
+        return;
+    }
+
+    AppState.currentYear = targetYear;
+    AppState.currentMonth = targetMonth;
+    syncCalendarSelectors();
+    AppState.agendaDates = getSundays(targetMonth, targetYear);
+    AppState.activeIdx = Math.max(0, AppState.agendaDates.indexOf(targetDateKey));
+    AppState.monthData = {};
+    AppState.pendingDateKey = targetDateKey;
+    pendingMonthEdge = null;
+
+    if (AppState.viewMode === 'edit') {
+        AppState.viewMode = 'view';
+        setToggleBtn('view');
+    }
+    AppState.editorScreen = 'edit';
+    updateTodayLabel();
+
+    const content = document.getElementById('contentArea');
+    if (content) content.innerHTML = '<div class="loading-state">Volviendo a la fecha actual…</div>';
+    setupRealtimeListener();
+}
+
 async function navigateDate(direction) {
     if (isNavigatingMonth) return;
 
@@ -265,15 +358,8 @@ async function navigateDate(direction) {
     isNavigatingMonth = true;
     setNavigationButtonsDisabled(true);
 
-    const hadPendingDebouncedSave = Boolean(saveTimeout);
-    if (saveTimeout) {
-        clearTimeout(saveTimeout);
-        saveTimeout = null;
-    }
-
     try {
-        if (savePromise) await savePromise;
-        if (hadPendingDebouncedSave) await save();
+        await flushPendingSaveBeforeNavigation();
     } catch (error) {
         console.error('No se pudo guardar antes de cambiar de mes:', error);
         isNavigatingMonth = false;
@@ -1066,6 +1152,7 @@ async function addSpecialDate() {
 
     function toggleMode() {
         AppState.viewMode = AppState.viewMode === 'view' ? 'edit' : 'view';
+        AppState.calendarDisplay = 'agenda';
         AppState.editorScreen = 'edit';
         setToggleBtn(AppState.viewMode);
         render();
@@ -1091,6 +1178,7 @@ async function addSpecialDate() {
         }
 
         AppState.currentMonth = Number(document.getElementById('monthSelect').value);
+        AppState.calendarDisplay = 'agenda';
         AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
         AppState.activeIdx = 0;
         AppState.monthData = {};
@@ -1115,6 +1203,7 @@ async function addSpecialDate() {
         }
 
         AppState.currentYear = Number(document.getElementById('yearSelect').value);
+        AppState.calendarDisplay = 'agenda';
         AppState.agendaDates = getSundays(AppState.currentMonth, AppState.currentYear);
         AppState.activeIdx = 0;
         AppState.monthData = {};
