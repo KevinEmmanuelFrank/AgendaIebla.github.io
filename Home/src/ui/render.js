@@ -39,6 +39,7 @@ export function escapeHtml(str) {
         if (!dateKey) return;
         ensureData(dateKey);
         const data = AppState.monthData[dateKey];
+        applyPageTheme(data);
         const d = new Date(dateKey + "T12:00:00");
         const dayNum = d.getDate();
         const monthLabel = monthNames[AppState.currentMonth];
@@ -181,6 +182,86 @@ export function escapeHtml(str) {
                 </div>
                 ${notesHTML}
             </div>`}
+        </div>`;
+    }
+
+
+    const PAGE_THEMES = ['navidad', 'pascua', 'pentecostes', 'aniversario'];
+
+    function themeParticleMarkup(theme, enabled = true) {
+        if (!enabled || theme === 'clasico') return '';
+        const particles = {
+            navidad: ['❄', '✧', '❅', '❄', '✦', '❅', '❄'],
+            pascua: ['✧', '·', '✦', '✧', '·', '✦'],
+            pentecostes: ['✦', '🔥', '✧', '🔥', '✦', '🔥'],
+            aniversario: ['✦', '✧', '✦', '·', '✧', '✦']
+        }[theme] || [];
+
+        return particles.map((particle, index) =>
+            `<span class="theme-particle particle-${index + 1}">${particle}</span>`
+        ).join('');
+    }
+
+    export function applyPageTheme(data = {}) {
+        const theme = normalizeTheme(data.visualTheme);
+        document.body.classList.remove(...PAGE_THEMES.map(name => `theme-${name}`));
+        if (theme !== 'clasico') document.body.classList.add(`theme-${theme}`);
+
+        const effects = document.getElementById('themeEffects');
+        if (effects) {
+            effects.className = `theme-effects theme-effects-${theme}`;
+            effects.innerHTML = themeParticleMarkup(theme, data.visualEffects !== false);
+        }
+    }
+
+    export function renderFullPagePreview(data, dateKey) {
+        const date = new Date(dateKey + 'T12:00:00');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dateKey + 'T00:00:00');
+        const badge = data.isSpecialDate === true
+            ? 'special'
+            : selectedDate < today ? 'past' : null;
+        const theme = normalizeTheme(data.visualTheme);
+        const monthLabel = monthNames[date.getMonth()];
+        const weekday = formatWeekday(dateKey);
+        const effectsEnabled = data.visualEffects !== false;
+
+        return `<div class="page-preview-shell theme-${theme}">
+            <div class="theme-effects theme-effects-${theme}" aria-hidden="true">${themeParticleMarkup(theme, effectsEnabled)}</div>
+            <header class="header preview-header">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <h1>IEBLA</h1>
+                        <p>Agenda Musical ${date.getFullYear()}</p>
+                    </div>
+                </div>
+                <div class="header-controls">
+                    <select disabled aria-label="Vista previa del año"><option>${date.getFullYear()}</option></select>
+                    <select disabled aria-label="Vista previa del mes"><option>${monthLabel}</option></select>
+                    <button class="btn btn-primary" type="button" disabled>Ver</button>
+                </div>
+            </header>
+            <nav class="nav preview-nav" aria-hidden="true">
+                <button class="nav-btn" type="button" disabled><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></button>
+                <div class="nav-center">
+                    <div class="sync-badge"><div class="sync-dot online"></div><span>Online</span></div>
+                </div>
+                <button class="nav-btn" type="button" disabled><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
+            </nav>
+            <main class="main preview-main">
+                ${renderView(data, date.getDate(), monthLabel, badge, dateKey, weekday)}
+            </main>
+            <footer class="footer preview-footer">
+                <div class="preview-footer-logo">IEBLA</div>
+                <span class="footer-date">Agenda Musical · ${date.getFullYear()}</span>
+                <span class="footer-drive-btn">Drive</span>
+            </footer>
         </div>`;
     }
 
@@ -330,12 +411,27 @@ export function escapeHtml(str) {
 
     
 
+
     function renderAdvanced(data, dateKey, dayNum, monthLabel, weekday) {
         const currentTheme = normalizeTheme(data.visualTheme);
         const optionsHTML = THEME_OPTIONS.map(option =>
             `<option value="${option.value}" ${option.value === currentTheme ? 'selected' : ''}>${option.label}</option>`
         ).join('');
         const title = typeof data.specialTitle === 'string' ? data.specialTitle : '';
+        const effectsEnabled = data.visualEffects !== false;
+
+        const copySources = AppState.agendaDates
+            .filter(key => key !== dateKey && AppState.monthData[key] && typeof AppState.monthData[key] === 'object');
+        const copyOptionsHTML = copySources.map(key => {
+            const sourceDate = new Date(key + 'T12:00:00');
+            const sourceData = AppState.monthData[key];
+            const sourceTitle = typeof sourceData.specialTitle === 'string' && sourceData.specialTitle.trim()
+                ? sourceData.specialTitle.trim()
+                : 'Agenda';
+            const sourceTheme = normalizeTheme(sourceData.visualTheme);
+            const dateLabel = `${formatWeekday(key)} ${sourceDate.getDate()} de ${monthNames[sourceDate.getMonth()]}`;
+            return `<option value="${key}">${escapeHtml(dateLabel)} · ${escapeHtml(sourceTitle)} · ${escapeHtml(sourceTheme)}</option>`;
+        }).join('');
 
         return `<div class="fade-in advanced-screen">
             <div class="advanced-heading">
@@ -349,24 +445,43 @@ export function escapeHtml(str) {
                 <div class="card-header">
                     <div class="card-title"><div class="dot dot-purple"></div><span>Presentación de esta fecha</span></div>
                 </div>
-                <p class="advanced-description">Personalizá cómo se verá esta fecha en la agenda. Los músicos, las canciones y las notas no se modifican.</p>
+                <p class="advanced-description">La estructura de la agenda permanece igual. Personalizá los colores y pequeños detalles de esta celebración.</p>
                 <label class="advanced-field">
                     <span>Nombre o título de la celebración</span>
                     <input id="specialTitleInput" type="text" maxlength="70" value="${escapeHtml(title)}" placeholder="Ej. Navidad, Domingo de Resurrección…">
                 </label>
                 <label class="advanced-field">
-                    <span>Diseño visual</span>
+                    <span>Tema general de la página</span>
                     <select id="visualThemeSelect">${optionsHTML}</select>
                 </label>
+                <label class="advanced-effects-toggle">
+                    <input id="visualEffectsCheck" type="checkbox" ${effectsEnabled ? 'checked' : ''}>
+                    <span class="advanced-effects-switch" aria-hidden="true"></span>
+                    <span>Mostrar detalles decorativos sutiles</span>
+                </label>
+
+                <div class="advanced-theme-tools">
+                    <label class="advanced-field">
+                        <span>Copiar tema de otra fecha de este mes</span>
+                        <select id="copyThemeFromDate" ${copySources.length ? '' : 'disabled'}>
+                            <option value="">Elegí una fecha</option>
+                            ${copyOptionsHTML}
+                        </select>
+                    </label>
+                    <button class="btn-tool-secondary" id="copyThemeBtn" type="button" ${copySources.length ? '' : 'disabled'}>Copiar tema seleccionado</button>
+                    <button class="btn-tool-quiet" id="resetThemeBtn" type="button">Restablecer tema clásico</button>
+                </div>
+
                 <button class="btn-save advanced-save-btn" id="saveAdvancedBtn" type="button">Guardar ajustes visuales</button>
-                <button class="btn-preview" id="previewAdvancedBtn" type="button">◉ Ver vista previa</button>
+                <button class="btn-preview" id="previewAdvancedBtn" type="button">◉ Ver vista previa de toda la página</button>
                 <div class="advanced-preview-panel" id="advancedPreviewPanel" hidden>
                     <div class="advanced-preview-caption">
-                        <strong>Vista previa</strong>
-                        <span>Así se verá la fecha. Los cambios todavía no están guardados.</span>
+                        <strong>Vista previa completa</strong>
+                        <span>Incluye encabezado, controles, navegación, agenda y pie de página. No se guarda hasta confirmar.</span>
                     </div>
                     <div id="advancedPreviewContent"></div>
                 </div>
+                <div class="advanced-feedback" id="specialDateFeedback" aria-live="polite"></div>
             </section>
 
             <section class="card advanced-card special-date-card">
@@ -394,7 +509,6 @@ export function escapeHtml(str) {
                 </label>
                 <button class="btn-special-date" id="addSpecialDateBtn" type="button">＋ Agregar fecha especial</button>
                 <p class="advanced-footnote">Cada fecha conserva su propio equipo, repertorio, notas y diseño.</p>
-                <div class="advanced-feedback" id="specialDateFeedback" aria-live="polite"></div>
             </section>
         </div>`;
     }

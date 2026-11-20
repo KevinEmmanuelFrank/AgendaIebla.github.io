@@ -1410,3 +1410,227 @@
 .advanced-preview-panel .agenda-theme {
     width: 100%;
 }
+
+
+/* ── TEMAS GLOBALES: misma estructura, paletas adaptadas ── */
+body.theme-navidad, .page-preview-shell.theme-navidad {
+    --bg-deep:#08150f; --bg-mid:#0d1f16; --bg-surface:#132a1e; --bg-card:#193629;
+    --border:rgba(134,239,172,.12); --border-bright:rgba(134,239,172,.24);
+    --accent-cyan:#86efac; --accent-purple:#fda4af; --accent-emerald:#86efac; --accent-amber:#fcd34d;
+    --glow-cyan:rgba(74,222,128,.16); --glow-purple:rgba(251,113,133,.13);
+    --theme-primary:#86efac; --theme-secondary:#fda4af; --theme-border:rgba(134,239,172,.34);
+    --theme-glow:rgba(22,163,74,.13); --theme-card-one:rgba(22,163,74,.09);
+    --theme-card-two:rgba(220,38,38,.08); --theme-card-three:rgba(250,204,21,.07);
+}
+body.theme-pascua, .page-preview-shell.theme-pascua {
+    --bg-deep:#120f1c; --bg-mid:#1a1628; --bg-surface:#241e35; --bg-card:#302743;
+    --border:rgba(196,181,253,.13); --border-bright:rgba(196,181,253,.25);
+    --accent-cyan:#c4b5fd; --accent-purple:#f0abfc; --accent-emerald:#a7f3d0; --accent-amber:#facc15;
+    --glow-cyan:rgba(167,139,250,.16); --glow-purple:rgba(217,70,239,.12);
+    --theme-primary:#c4b5fd; --theme-secondary:#facc15; --theme-border:rgba(196,181,253,.38);
+    --theme-glow:rgba(139,92,246,.14); --theme-card-one:rgba(139,92,246,.09);
+    --theme-card-two:rgba(250,204,21,.07); --theme-card-three:rgba(192,132,252,.07);
+}
+body.theme-pentecostes, .page-preview-shell.theme-pentecostes {
+    --bg-deep:#1a0e09; --bg-mid:#24140d; --bg-surface:#321c12; --bg-card:#402519;
+    --border:rgba(251,146,60,.14); --border-bright:rgba(251,146,60,.27);
+    --accent-cyan:#fb923c; --accent-purple:#f87171; --accent-emerald:#fbbf24; --accent-amber:#fcd34d;
+    --glow-cyan:rgba(234,88,12,.16); --glow-purple:rgba(220,38,38,.13);
+    --theme-primary:#fb923c; --theme-secondary:#ef4444; --theme-border:rgba(251,146,60,.4);
+    --theme-glow:rgba(234,88,12,.14); --theme-card-one:rgba(234,88,12,.09);
+    --theme-card-two:rgba(220,38,38,.08); --theme-card-three:rgba(250,204,21,.07);
+}
+body.theme-aniversario, .page-preview-shell.theme-aniversario {
+    --bg-deep:#12120d; --bg-mid:#1d1b11; --bg-surface:#292516; --bg-card:#35301d;
+    --border:rgba(250,204,21,.14); --border-bright:rgba(250,204,21,.27);
+    --accent-cyan:#facc15; --accent-purple:#38bdf8; --accent-emerald:#a3e635; --accent-amber:#facc15;
+    --glow-cyan:rgba(202,138,4,.16); --glow-purple:rgba(14,165,233,.12);
+    --theme-primary:#facc15; --theme-secondary:#38bdf8; --theme-border:rgba(250,204,21,.4);
+    --theme-glow:rgba(202,138,4,.13); --theme-card-one:rgba(202,138,4,.09);
+    --theme-card-two:rgba(14,165,233,.08); --theme-card-three:rgba(250,204,21,.07);
+}
+body { transition: background-color .35s ease, color .35s ease; }
+body.theme-navidad .ambient-1 { background:rgba(22,163,74,.08); }
+body.theme-navidad .ambient-2 { background:rgba(220,38,38,.07); }
+body.theme-pascua .ambient-1 { background:rgba(139,92,246,.09); }
+body.theme-pascua .ambient-2 { background:rgba(250,204,21,.06); }
+body.theme-pentecostes .ambient-1 { background:rgba(234,88,12,.1); }
+body.theme-pentecostes .ambient-2 { background:rgba(220,38,38,.07); }
+body.theme-aniversario .ambient-1 { background:rgba(202,138,4,.09); }
+body.theme-aniversario .ambient-2 { background:rgba(14,165,233,.06); }
+
+body.theme-navidad .btn-primary, body.theme-pascua .btn-primary,
+body.theme-pentecostes .btn-primary, body.theme-aniversario .btn-primary,
+.page-preview-shell .btn-primary {
+    background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple));
+}
+body.theme-navidad .btn-save, body.theme-pascua .btn-save,
+body.theme-pentecostes .btn-save, body.theme-aniversario .btn-save,
+.page-preview-shell .btn-save {
+    background:linear-gradient(135deg,var(--accent-emerald),var(--accent-cyan));
+}
+body.theme-navidad .card-cyan, .page-preview-shell.theme-navidad .card-cyan,
+body.theme-pascua .card-cyan, .page-preview-shell.theme-pascua .card-cyan,
+body.theme-pentecostes .card-cyan, .page-preview-shell.theme-pentecostes .card-cyan,
+body.theme-aniversario .card-cyan, .page-preview-shell.theme-aniversario .card-cyan {
+    background:var(--theme-card-one); border-color:var(--theme-border);
+}
+body.theme-navidad .card-purple, .page-preview-shell.theme-navidad .card-purple,
+body.theme-pascua .card-purple, .page-preview-shell.theme-pascua .card-purple,
+body.theme-pentecostes .card-purple, .page-preview-shell.theme-pentecostes .card-purple,
+body.theme-aniversario .card-purple, .page-preview-shell.theme-aniversario .card-purple {
+    background:var(--theme-card-two); border-color:var(--theme-border);
+}
+body.theme-navidad .card-amber, .page-preview-shell.theme-navidad .card-amber,
+body.theme-pascua .card-amber, .page-preview-shell.theme-pascua .card-amber,
+body.theme-pentecostes .card-amber, .page-preview-shell.theme-pentecostes .card-amber,
+body.theme-aniversario .card-amber, .page-preview-shell.theme-aniversario .card-amber {
+    background:var(--theme-card-three); border-color:var(--theme-border);
+}
+body.theme-navidad .special-event-title, body.theme-pascua .special-event-title,
+body.theme-pentecostes .special-event-title, body.theme-aniversario .special-event-title {
+    color:var(--theme-primary); border-color:var(--theme-border); background:var(--theme-glow);
+}
+body.theme-navidad .nav::after, body.theme-pascua .nav::after,
+body.theme-pentecostes .nav::after, body.theme-aniversario .nav::after,
+body.theme-navidad .header::before, body.theme-pascua .header::before,
+body.theme-pentecostes .header::before, body.theme-aniversario .header::before {
+    background:linear-gradient(90deg,transparent,var(--theme-primary),var(--theme-secondary),transparent);
+}
+body.theme-navidad .footer::after, body.theme-pascua .footer::after,
+body.theme-pentecostes .footer::after, body.theme-aniversario .footer::after {
+    background:linear-gradient(90deg,transparent,var(--theme-secondary),var(--theme-primary),transparent);
+}
+
+/* Detalles flotantes discretos, sin bloquear controles ni capturar clics. */
+.theme-effects {
+    position:absolute; inset:0; z-index:5; overflow:hidden; pointer-events:none; border-radius:inherit;
+}
+.theme-particle {
+    position:absolute; display:block; top:-22px; left:4%; color:rgba(255,255,255,.58);
+    font-size:13px; line-height:1; text-shadow:0 0 10px currentColor; opacity:0;
+    will-change:transform,opacity;
+}
+.theme-particle.particle-1 { left:5%; animation-delay:-7s; }
+.theme-particle.particle-2 { left:18%; animation-delay:-13s; }
+.theme-particle.particle-3 { left:83%; animation-delay:-3s; }
+.theme-particle.particle-4 { left:94%; animation-delay:-17s; }
+.theme-particle.particle-5 { left:11%; animation-delay:-10s; }
+.theme-particle.particle-6 { left:89%; animation-delay:-5s; }
+.theme-particle.particle-7 { left:50%; animation-delay:-19s; }
+.theme-effects-navidad .theme-particle { color:rgba(219,242,255,.65); font-size:12px; animation:themeSnowfall 21s linear infinite; }
+.theme-effects-navidad .particle-2 { animation-duration:25s; font-size:10px; }
+.theme-effects-navidad .particle-4 { animation-duration:28s; font-size:15px; }
+.theme-effects-navidad .particle-7 { animation-duration:30s; font-size:9px; }
+.theme-effects-pentecostes .theme-particle {
+    top:auto; bottom:6%; color:rgba(251,146,60,.72); font-size:12px;
+    animation:themeEmberRise 12s ease-in infinite;
+}
+.theme-effects-pentecostes .particle-2 { animation-duration:15s; }
+.theme-effects-pentecostes .particle-4 { animation-duration:17s; }
+.theme-effects-pentecostes .particle-6 { animation-duration:14s; }
+.theme-effects-pascua .theme-particle, .theme-effects-aniversario .theme-particle {
+    top:15%; color:rgba(250,230,170,.58); animation:themeSoftSparkle 4.5s ease-in-out infinite;
+}
+.theme-effects-pascua .particle-2, .theme-effects-aniversario .particle-2 { animation-delay:-2s; }
+.theme-effects-pascua .particle-3, .theme-effects-aniversario .particle-3 { animation-delay:-3.5s; }
+.theme-effects-pascua .particle-4, .theme-effects-aniversario .particle-4 { animation-delay:-1s; }
+.theme-effects-pascua .particle-5, .theme-effects-aniversario .particle-5 { animation-delay:-2.7s; }
+.theme-effects-aniversario .theme-particle { color:rgba(250,204,21,.76); }
+@keyframes themeSnowfall {
+    0% { opacity:0; transform:translate3d(0,-10px,0) rotate(0deg); }
+    12% { opacity:.72; } 88% { opacity:.5; }
+    100% { opacity:0; transform:translate3d(18px,calc(100% + 45px),0) rotate(240deg); }
+}
+@keyframes themeEmberRise {
+    0% { opacity:0; transform:translate3d(0,0,0) scale(.72); }
+    18% { opacity:.7; } 78% { opacity:.42; }
+    100% { opacity:0; transform:translate3d(12px,-75vh,0) scale(1.18); }
+}
+@keyframes themeSoftSparkle {
+    0%,100% { opacity:.08; transform:scale(.75) rotate(0deg); }
+    50% { opacity:.62; transform:scale(1.08) rotate(35deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .theme-effects * { animation:none !important; opacity:.18 !important; }
+}
+
+/* Vista previa de la aplicación completa */
+.page-preview-shell {
+    position:relative; width:100%; max-width:860px; margin:0 auto;
+    color:var(--text-primary); background:var(--bg-deep);
+    border:1px solid var(--border-bright); border-radius:16px; overflow:hidden; isolation:isolate;
+}
+.page-preview-shell .header { padding:18px 22px; border-radius:0; }
+.page-preview-shell .brand-icon { width:42px; height:42px; border-radius:13px; }
+.page-preview-shell .brand-icon svg { width:22px; height:22px; }
+.page-preview-shell .brand-text h1 { font-size:24px; }
+.page-preview-shell .brand-text p { font-size:9px; }
+.page-preview-shell .header-controls { gap:6px; }
+.page-preview-shell .header-controls select { min-width:68px; width:82px; padding:8px 24px 8px 10px; font-size:10px; }
+.page-preview-shell .header-controls .btn { padding:9px 12px; font-size:10px; }
+.page-preview-shell .nav { padding:12px 18px; gap:10px; }
+.page-preview-shell .nav-btn { width:36px; height:36px; border-radius:11px; }
+.page-preview-shell .nav-btn svg { width:16px; height:16px; }
+.page-preview-shell .sync-badge { font-size:9px; padding:5px 10px; }
+.page-preview-shell .main { min-height:0; padding:22px; }
+.page-preview-shell .view-day-num { font-size:66px; }
+.page-preview-shell .card { padding:18px; border-radius:14px; }
+.page-preview-shell .tag { font-size:12px; padding:7px 10px; }
+.page-preview-shell .footer { padding:14px 18px; border-radius:0; }
+.page-preview-shell .preview-footer-logo {
+    display:inline-flex; align-items:center; justify-content:center; padding:5px 12px;
+    border-radius:9px; background:rgba(255,255,255,.92); color:#14251b;
+    font-family:'Instrument Serif',serif; font-size:17px; font-style:italic; font-weight:700;
+}
+.page-preview-shell .preview-footer .footer-drive-btn { font-size:9px; padding:4px 9px; }
+.page-preview-shell .theme-effects { z-index:8; }
+.page-preview-shell .header, .page-preview-shell .nav,
+.page-preview-shell .main, .page-preview-shell .footer { position:relative; z-index:1; }
+
+.advanced-effects-toggle {
+    display:flex; align-items:center; gap:11px; margin:15px 0 18px;
+    color:var(--text-secondary); font-size:13px; cursor:pointer; user-select:none;
+}
+.advanced-effects-toggle input { position:absolute; opacity:0; pointer-events:none; }
+.advanced-effects-switch {
+    position:relative; width:38px; height:22px; flex:0 0 38px;
+    border:1px solid var(--border-bright); border-radius:20px; background:var(--bg-deep);
+    transition:background .2s,border-color .2s;
+}
+.advanced-effects-switch::after {
+    content:''; position:absolute; top:3px; left:3px; width:14px; height:14px;
+    border-radius:50%; background:var(--text-muted); transition:transform .2s,background .2s;
+}
+.advanced-effects-toggle input:checked + .advanced-effects-switch {
+    background:color-mix(in srgb,var(--accent-cyan) 20%,transparent); border-color:var(--accent-cyan);
+}
+.advanced-effects-toggle input:checked + .advanced-effects-switch::after {
+    transform:translateX(16px); background:var(--accent-cyan);
+}
+.advanced-theme-tools {
+    padding:14px; margin:14px 0 4px; border:1px solid var(--border);
+    border-radius:13px; background:var(--bg-surface);
+}
+.advanced-theme-tools .advanced-field { margin-top:0; }
+.btn-tool-secondary, .btn-tool-quiet {
+    width:100%; min-height:42px; border-radius:10px; font:700 12px 'DM Sans',sans-serif; cursor:pointer;
+}
+.btn-tool-secondary {
+    color:var(--accent-cyan); background:color-mix(in srgb,var(--accent-cyan) 10%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent-cyan) 42%,transparent);
+}
+.btn-tool-quiet {
+    margin-top:8px; color:var(--text-secondary); background:transparent; border:1px solid var(--border-bright);
+}
+.btn-tool-secondary:disabled { opacity:.45; cursor:not-allowed; }
+.btn-tool-secondary:not(:disabled):hover, .btn-tool-quiet:hover { border-color:var(--accent-cyan); }
+.advanced-preview-panel { max-height:820px; overflow:auto; }
+.advanced-preview-panel[hidden] { display:none; }
+@media (max-width:600px) {
+    .page-preview-shell .header { padding:16px; }
+    .page-preview-shell .main { padding:16px 12px; }
+    .page-preview-shell .card { padding:14px; }
+    .page-preview-shell .brand-icon { width:36px; height:36px; }
+    .page-preview-shell .header-controls select { min-width:0; width:auto; flex:1 1 0; }
+}

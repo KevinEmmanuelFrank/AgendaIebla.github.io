@@ -2,7 +2,7 @@ import { AppState } from "./state.js";
 import { monthNames, getSundays as buildSundays, getLocalISODate } from "./calendar.js";
 import { initializeFirebase, signInAnonymously } from "./firebase.js";
 import { subscribeToMonth, saveMonth, createSpecialDate } from "./agendaRepository.js";
-import { renderContent, renderDatePreview, escapeHtml } from "./ui/render.js";
+import { renderContent, renderFullPagePreview, applyPageTheme, escapeHtml } from "./ui/render.js";
 
 let db;
 let editInputHandlerBound = false;
@@ -287,13 +287,44 @@ function bindAdvancedEvents() {
     document.getElementById('saveAdvancedBtn')?.addEventListener('click', saveAdvancedSettings);
     document.getElementById('addSpecialDateBtn')?.addEventListener('click', addSpecialDate);
 
-    const previewButton = document.getElementById('previewAdvancedBtn');
-    previewButton?.addEventListener('click', toggleAdvancedPreview);
-
+    document.getElementById('previewAdvancedBtn')?.addEventListener('click', toggleAdvancedPreview);
     document.getElementById('specialTitleInput')?.addEventListener('input', refreshAdvancedPreview);
     document.getElementById('visualThemeSelect')?.addEventListener('change', refreshAdvancedPreview);
+    document.getElementById('visualEffectsCheck')?.addEventListener('change', refreshAdvancedPreview);
+    document.getElementById('copyThemeBtn')?.addEventListener('click', copyThemeFromAnotherDate);
+    document.getElementById('resetThemeBtn')?.addEventListener('click', resetAdvancedTheme);
 }
 
+
+
+function copyThemeFromAnotherDate() {
+    const select = document.getElementById('copyThemeFromDate');
+    const sourceKey = select?.value;
+    const source = sourceKey ? AppState.monthData[sourceKey] : null;
+    if (!source) {
+        showAdvancedFeedback('Elegí una fecha válida de este mes.', 'error');
+        return;
+    }
+
+    const sourceTheme = ALLOWED_VISUAL_THEMES.has(source.visualTheme) ? source.visualTheme : 'clasico';
+    const themeSelect = document.getElementById('visualThemeSelect');
+    const effectsCheck = document.getElementById('visualEffectsCheck');
+    if (themeSelect) themeSelect.value = sourceTheme;
+    if (effectsCheck) effectsCheck.checked = source.visualEffects !== false;
+
+    refreshAdvancedPreview();
+    showAdvancedFeedback('Se copió el tema visual. Todavía falta guardar los cambios.', 'success');
+}
+
+function resetAdvancedTheme() {
+    const themeSelect = document.getElementById('visualThemeSelect');
+    const effectsCheck = document.getElementById('visualEffectsCheck');
+    if (themeSelect) themeSelect.value = 'clasico';
+    if (effectsCheck) effectsCheck.checked = false;
+
+    refreshAdvancedPreview();
+    showAdvancedFeedback('Tema clásico seleccionado. Guardá para aplicarlo a esta fecha.', 'success');
+}
 
 function toggleAdvancedPreview() {
     const panel = document.getElementById('advancedPreviewPanel');
@@ -319,13 +350,15 @@ function refreshAdvancedPreview() {
     const selectedTheme = document.getElementById('visualThemeSelect')?.value || 'clasico';
     const theme = ALLOWED_VISUAL_THEMES.has(selectedTheme) ? selectedTheme : 'clasico';
 
+    const effectsEnabled = document.getElementById('visualEffectsCheck')?.checked !== false;
     const previewData = {
         ...record,
         specialTitle: title,
-        visualTheme: theme
+        visualTheme: theme,
+        visualEffects: effectsEnabled
     };
 
-    content.innerHTML = renderDatePreview(previewData, dateKey);
+    content.innerHTML = renderFullPagePreview(previewData, dateKey);
 }
 
 async function flushPendingMonthSave() {
@@ -343,10 +376,12 @@ async function saveAdvancedSettings() {
     const title = document.getElementById('specialTitleInput')?.value.trim() || '';
     const selectedTheme = document.getElementById('visualThemeSelect')?.value || 'clasico';
     const theme = ALLOWED_VISUAL_THEMES.has(selectedTheme) ? selectedTheme : 'clasico';
+    const visualEffects = document.getElementById('visualEffectsCheck')?.checked !== false;
     const button = document.getElementById('saveAdvancedBtn');
 
     record.specialTitle = title;
     record.visualTheme = theme;
+    record.visualEffects = visualEffects;
 
     if (button) {
         button.disabled = true;
@@ -355,6 +390,7 @@ async function saveAdvancedSettings() {
 
     try {
         await flushPendingMonthSave();
+        applyPageTheme(record);
         if (button) button.textContent = '¡Guardado!';
         showAdvancedFeedback('Los cambios visuales se guardaron para esta fecha.', 'success');
         setSyncStatus('saved', '¡Guardado!');
@@ -425,7 +461,8 @@ async function addSpecialDate() {
         danza: { active: false, songs: [] },
         isSpecialDate: true,
         specialTitle: title,
-        visualTheme: theme
+        visualTheme: theme,
+        visualEffects: true
     };
 
     try {
