@@ -6,6 +6,7 @@ export const AppState = {
         dragHintShown: false,
         viewMode: 'view',
         editorScreen: 'edit',
+        calendarDisplay: 'agenda',
         pendingDateKey: null,
         currentYear: new Date().getFullYear(),
         currentMonth: new Date().getMonth(),
