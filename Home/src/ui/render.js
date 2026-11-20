@@ -71,8 +71,6 @@ export function escapeHtml(str) {
                     ? renderAdvanced(data, dateKey, dayNum, monthLabel, weekday)
                     : renderEdit(data, dayNum, monthLabel, badge, dateKey, weekday);
 
-        document.getElementById('prevSunday').disabled = AppState.activeIdx === 0;
-        document.getElementById('nextSunday').disabled = AppState.activeIdx === AppState.agendaDates.length - 1;
     }
 
     export function ensureData(dateKey) {
