@@ -1822,6 +1822,7 @@ button.month-day:focus-visible {
     background:var(--accent-cyan);
 }
 .month-legend-dot.special { background:var(--accent-amber); }
+.month-legend-dot.theme { background:linear-gradient(90deg,#86efac,#c4b5fd,#fb923c,#facc15); }
 .month-legend-dot.today { background:var(--accent-emerald); }
 
 @media (max-width:600px) {
@@ -1846,3 +1847,15 @@ button.month-day:focus-visible {
     .month-day { min-height:58px; padding:6px 4px; }
     .month-day-event { font-size:7px; }
 }
+
+
+/* La vista mensual refleja el tema visual propio de cada fecha. */
+.month-day.theme-navidad { border-color:rgba(134,239,172,.62); background:linear-gradient(145deg,rgba(22,163,74,.23),rgba(25,54,41,.68)); }
+.month-day.theme-navidad .month-day-number, .month-day.theme-navidad .month-day-event { color:#86efac; }
+.month-day.theme-pascua { border-color:rgba(196,181,253,.62); background:linear-gradient(145deg,rgba(139,92,246,.23),rgba(48,39,67,.68)); }
+.month-day.theme-pascua .month-day-number, .month-day.theme-pascua .month-day-event { color:#c4b5fd; }
+.month-day.theme-pentecostes { border-color:rgba(251,146,60,.66); background:linear-gradient(145deg,rgba(234,88,12,.24),rgba(64,37,25,.7)); }
+.month-day.theme-pentecostes .month-day-number, .month-day.theme-pentecostes .month-day-event { color:#fb923c; }
+.month-day.theme-aniversario { border-color:rgba(250,204,21,.66); background:linear-gradient(145deg,rgba(202,138,4,.23),rgba(53,48,29,.7)); }
+.month-day.theme-aniversario .month-day-number, .month-day.theme-aniversario .month-day-event { color:#facc15; }
+.month-day.is-selected { box-shadow:inset 0 0 0 1px var(--accent-purple),0 0 0 2px color-mix(in srgb,var(--accent-purple) 30%,transparent); }
