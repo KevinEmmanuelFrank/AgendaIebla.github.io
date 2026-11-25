@@ -28,6 +28,15 @@ export function escapeHtml(str) {
         return VALID_THEMES.has(theme) ? theme : 'clasico';
     }
 
+    function isThemedSunday(data, dateKey) {
+        if (!dateKey || normalizeTheme(data?.visualTheme) === 'clasico') return false;
+        return new Date(dateKey + 'T12:00:00').getDay() === 0;
+    }
+
+    function isSpecialDateForDisplay(data, dateKey) {
+        return data?.isSpecialDate === true || isThemedSunday(data, dateKey);
+    }
+
     function formatWeekday(dateKey) {
         const value = new Date(dateKey + 'T12:00:00')
             .toLocaleDateString('es-AR', { weekday: 'long' });
@@ -58,7 +67,10 @@ export function escapeHtml(str) {
             const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
             const isAgendaDate = agendaDateSet.has(dateKey);
             const record = AppState.monthData[dateKey] || {};
-            const isSpecial = record.isSpecialDate === true;
+            const theme = normalizeTheme(record.visualTheme);
+            const hasCustomTheme = isAgendaDate && theme !== 'clasico';
+            const themedSunday = isAgendaDate && isThemedSunday(record, dateKey);
+            const isSpecial = record.isSpecialDate === true || themedSunday;
             const isToday = dateKey === todayISO;
             const isSelected = dateKey === selectedDateKey;
             const weekday = formatWeekday(dateKey);
@@ -66,14 +78,21 @@ export function escapeHtml(str) {
                 'month-day',
                 isAgendaDate ? 'is-agenda' : '',
                 isSpecial ? 'is-special' : '',
+                hasCustomTheme ? 'theme-' + theme : '',
                 isToday ? 'is-today' : '',
                 isSelected ? 'is-selected' : ''
             ].filter(Boolean).join(' ');
-            const eventLabel = isSpecial
-                ? (typeof record.specialTitle === 'string' && record.specialTitle.trim()
-                    ? record.specialTitle.trim()
-                    : 'Fecha especial')
-                : 'Culto dominical';
+            const themeLabels = {
+                navidad: 'Navidad',
+                pascua: 'Pascua',
+                pentecostes: 'Pentecostés',
+                aniversario: 'Aniversario'
+            };
+            const eventLabel = typeof record.specialTitle === 'string' && record.specialTitle.trim()
+                ? record.specialTitle.trim()
+                : hasCustomTheme
+                    ? themeLabels[theme]
+                    : isSpecial ? 'Fecha especial' : 'Culto dominical';
             const ariaLabel = isAgendaDate
                 ? `${weekday} ${day} de ${monthNames[month]}: ${eventLabel}`
                 : `${weekday} ${day} de ${monthNames[month]}`;
@@ -102,8 +121,9 @@ export function escapeHtml(str) {
             </div>
             <div class="month-grid">${cells.join('')}</div>
             <div class="month-legend">
-                <span><i class="month-legend-dot sunday"></i> Culto dominical</span>
-                <span><i class="month-legend-dot special"></i> Fecha especial</span>
+                <span><i class="month-legend-dot sunday"></i> Culto habitual</span>
+                <span><i class="month-legend-dot theme"></i> Tema personalizado</span>
+                <span><i class="month-legend-dot special"></i> Otra fecha especial</span>
                 <span><i class="month-legend-dot today"></i> Hoy</span>
             </div>
         </section>`;
@@ -131,7 +151,7 @@ export function escapeHtml(str) {
         const todayISO = getLocalISODate(today);
         const selectedDate = new Date(dateKey + "T00:00:00");
         let badge = null;
-        if (data.isSpecialDate === true) {
+        if (isSpecialDateForDisplay(data, dateKey)) {
             badge = 'special';
         } else if (selectedDate < today) {
             badge = 'past';
@@ -299,7 +319,7 @@ export function escapeHtml(str) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const selectedDate = new Date(dateKey + 'T00:00:00');
-        const badge = data.isSpecialDate === true
+        const badge = isSpecialDateForDisplay(data, dateKey)
             ? 'special'
             : selectedDate < today ? 'past' : null;
         const theme = normalizeTheme(data.visualTheme);
@@ -354,7 +374,7 @@ export function escapeHtml(str) {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const selectedDate = new Date(dateKey + "T00:00:00");
-        const badge = data.isSpecialDate === true
+        const badge = isSpecialDateForDisplay(data, dateKey)
             ? 'special'
             : selectedDate < today ? 'past' : null;
 
@@ -416,7 +436,7 @@ export function escapeHtml(str) {
                 <div class="edit-date-num" style="font-family:'Instrument Serif',serif; font-size:88px; font-weight:400; font-style:italic; line-height:1; background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">${dayNum}</div>
                 <div style="font-size:11px; font-weight:700; letter-spacing:0.35em; text-transform:uppercase; color:var(--text-secondary); margin-top:4px;">${weekday} · ${monthLabel} ${AppState.currentYear}</div>
                 ${data.specialTitle ? `<div class="special-event-title edit-special-title">${escapeHtml(data.specialTitle)}</div>` : ''}
-                ${data.isSpecialDate ? '<div class="date-badge special"><span class="badge-dot"></span>Fecha especial</div>' : badge === 'next' ? '<div class="date-badge next no-export"><span class="badge-dot"></span>Próximo</div>' : badge === 'past' ? '<div class="date-badge past no-export"><span class="badge-dot"></span>Pasado</div>' : ''}
+                ${badge === 'special' ? '<div class="date-badge special"><span class="badge-dot"></span>Fecha especial</div>' : badge === 'next' ? '<div class="date-badge next no-export"><span class="badge-dot"></span>Próximo</div>' : badge === 'past' ? '<div class="date-badge past no-export"><span class="badge-dot"></span>Pasado</div>' : ''}
             </div>
             <!-- MÚSICOS -->
             <div class="card card-cyan" style="margin-bottom:16px">
