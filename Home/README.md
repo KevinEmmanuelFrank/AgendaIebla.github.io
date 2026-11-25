@@ -44,3 +44,8 @@ La navegación mensual combina los domingos habituales con las fechas especiales
 ## Navegación y vista mensual
 
 La navegación por flechas recorre domingos y fechas especiales en orden cronológico, incluso al pasar de mes o de año. La vista mensual permite localizar las fechas programadas y abrir directamente la agenda de cada una. El acceso «Hoy» vuelve al domingo actual o al próximo domingo programado, según el día en que se consulte.
+
+
+## Temas en la vista mensual
+
+La vista mensual representa con el color de su tema cada fecha con tema personalizado. Los domingos con tema distinto de Clásico se identifican visualmente como fechas especiales, sin modificar el indicador isSpecialDate ni convertirlos en eventos adicionales de Firestore. Los domingos clásicos conservan el azul habitual; la selección solo agrega un contorno y no altera los colores del resto del mes.
