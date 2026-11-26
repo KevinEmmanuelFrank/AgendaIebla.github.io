@@ -397,7 +397,7 @@ export function escapeHtml(str) {
             const hasMultipleRoles = cfg.roles.length > 1;
             const roleChips = hasMultipleRoles ? cfg.roles.map(role => {
                 const active = selectedRoles.includes(role) ? 'role-active' : '';
-                return `<span class="role-chip ${active}" data-musician="${cfg.name}" data-role="${role}">${role}</span>`;
+                return `<button type="button" class="role-chip ${active}" data-musician="${cfg.name}" data-role="${role}">${role}</button>`;
             }).join('') : '';
             return `<div class="musician-row ${isSelected ? 'selected' : ''}" data-musician="${cfg.name}">
                 <div class="musician-main">
@@ -424,40 +424,43 @@ export function escapeHtml(str) {
                     </button>
                 </div>
                 <span class="edit-song-num">${i + 1}</span>
-                <input type="text" class="edit-input" value="${escapeHtml(s)}" data-idx="${i}" data-field="songs" placeholder="Ej: Cuán grande es Él">
-                <button class="del-btn" data-del-type="songs" data-del-idx="${i}">
+                <input type="text" class="edit-input" value="${escapeHtml(s)}" data-idx="${i}" data-field="songs" aria-label="Canción ${i + 1}" placeholder="Ej: Cuán grande es Él">
+                <button class="del-btn" type="button" data-del-type="songs" data-del-idx="${i}" aria-label="Eliminar canción ${i + 1}" title="Eliminar canción">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>`).join('');
 
-        return `<div class="fade-in">
+        return `<div class="fade-in edit-screen">
             <!-- FECHA -->
-            <div style="text-align:center; margin-bottom:24px;">
-                <div class="edit-date-num" style="font-family:'Instrument Serif',serif; font-size:88px; font-weight:400; font-style:italic; line-height:1; background:linear-gradient(135deg,var(--accent-cyan),var(--accent-purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">${dayNum}</div>
-                <div style="font-size:11px; font-weight:700; letter-spacing:0.35em; text-transform:uppercase; color:var(--text-secondary); margin-top:4px;">${weekday} · ${monthLabel} ${AppState.currentYear}</div>
+            <div class="edit-date-header">
+                <div class="edit-date-num">${dayNum}</div>
+                <div class="edit-date-meta">${weekday} · ${monthLabel} ${AppState.currentYear}</div>
                 ${data.specialTitle ? `<div class="special-event-title edit-special-title">${escapeHtml(data.specialTitle)}</div>` : ''}
                 ${badge === 'special' ? '<div class="date-badge special"><span class="badge-dot"></span>Fecha especial</div>' : badge === 'next' ? '<div class="date-badge next no-export"><span class="badge-dot"></span>Próximo</div>' : badge === 'past' ? '<div class="date-badge past no-export"><span class="badge-dot"></span>Pasado</div>' : ''}
             </div>
             <!-- MÚSICOS -->
-            <div class="card card-cyan" style="margin-bottom:16px">
+            <div class="card card-cyan edit-card-musicians" style="margin-bottom:16px">
                 <div class="card-header">
                     <div class="card-title"><div class="dot dot-cyan"></div><span>Equipo Musical</span></div>
+                    <span class="edit-count-pill" id="musiciansSelectedCount">${data.musicians.length} ${data.musicians.length === 1 ? 'seleccionado' : 'seleccionados'}</span>
                 </div>
-                <div id="musiciansToggleBtn" class="musicians-toggle-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                    Seleccionar músicos
-                </div>
+                <button id="musiciansToggleBtn" class="musicians-toggle-btn" type="button" aria-expanded="false" aria-controls="musiciansGridWrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 0 0 0 0 7.75"/></svg>
+                    <span class="musicians-toggle-label">Seleccionar músicos</span>
+                    <span class="musicians-toggle-arrow" aria-hidden="true">⌄</span>
+                </button>
+                <p class="edit-section-help">Elegí quiénes participan y marcá sus funciones.</p>
                 <div class="musicians-grid-wrap" id="musiciansGridWrap">
                     <div class="musicians-grid" id="musiciansGrid">${musicianRows}</div>
                 </div>
             </div>
-
             <!-- CANCIONES -->
             <div class="card card-purple" style="margin-bottom:16px">
                 <div class="card-header">
                     <div class="card-title"><div class="dot dot-purple"></div><span>Canciones</span></div>
-                    <button class="add-btn" id="add-songs" ${data.songs.length >= 12 ? 'disabled title="Máximo 12 canciones"' : ''}>+</button>
+                    <button class="add-btn" id="add-songs" type="button" aria-label="Agregar canción" title="${data.songs.length >= 12 ? 'Máximo 12 canciones' : 'Agregar canción'}" ${data.songs.length >= 12 ? 'disabled' : ''}>+</button>
                 </div>
+                <p class="edit-section-help songs-edit-help">Podés cambiar los títulos y ordenar la lista con las flechas o arrastrando.</p>
                 <div class="edit-list" id="list-songs" data-type="songs">
                     ${songsRows || `<div class="songs-empty-edit">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
@@ -471,7 +474,7 @@ export function escapeHtml(str) {
                 <div class="card-header">
                     <div class="card-title"><div class="dot dot-emerald"></div><span>Worshipers</span></div>
                     <label class="danza-toggle" id="danzaToggle">
-                        <input type="checkbox" id="danzaCheck" ${data.danza && data.danza.active ? 'checked' : ''}>
+                        <input type="checkbox" id="danzaCheck" aria-label="Activar equipo de Worshipers" ${data.danza && data.danza.active ? 'checked' : ''}>
                         <span class="danza-toggle-track"><span class="danza-toggle-thumb"></span></span>
                         <span class="danza-toggle-label">${data.danza && data.danza.active ? 'Presente' : 'No presente'}</span>
                     </label>
@@ -495,7 +498,7 @@ export function escapeHtml(str) {
                 <div class="card-header" style="margin-bottom:0;">
                     <div class="card-title"><div class="dot dot-amber"></div><span>Notas</span></div>
                 </div>
-                <textarea class="notes-textarea" data-field="notes" data-idx="0"
+                <textarea class="notes-textarea" data-field="notes" data-idx="0" aria-label="Notas de la celebración"
                     placeholder="Escribí las anotaciones para esta fecha…">${data.notes || ''}</textarea>
             </div>
 
