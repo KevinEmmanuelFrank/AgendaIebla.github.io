@@ -704,8 +704,9 @@ async function addSpecialDate() {
             toggleBtn.addEventListener('click', () => {
                 const isOpen = gridWrap.classList.toggle('open');
                 toggleBtn.innerHTML = isOpen
-                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><path d="M18 15l-6-6-6 6"/></svg>Ocultar músicos`
-                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Seleccionar músicos`;
+                    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><path d="M18 15l-6-6-6 6"/></svg><span class="musicians-toggle-label">Ocultar músicos</span><span class="musicians-toggle-arrow" aria-hidden="true">⌃</span>`
+                    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;flex-shrink:0"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 0 0 0 0 7.75"/></svg><span class="musicians-toggle-label">Seleccionar músicos</span><span class="musicians-toggle-arrow" aria-hidden="true">⌄</span>`;
+                toggleBtn.setAttribute('aria-expanded', String(isOpen));
             });
         }
 
@@ -761,6 +762,11 @@ async function addSpecialDate() {
                         c.classList.toggle('role-active', i === 0);
                     });
                 }
+            }
+            const selectedCount = document.getElementById('musiciansSelectedCount');
+            if (selectedCount) {
+                const count = musicians.length;
+                selectedCount.textContent = `${count} ${count === 1 ? 'seleccionado' : 'seleccionados'}`;
             }
             debouncedSave();
         });
