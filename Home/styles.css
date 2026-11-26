@@ -2714,3 +2714,22 @@ button.month-day:focus-visible {
     outline-offset: 2px;
     border-radius: 7px;
 }
+
+
+/* Captura PNG: nunca exportar la animación a medio aparecer ni atenuar fechas pasadas. */
+body.is-exporting .fade-in,
+body.is-exporting .song-new {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+}
+body.is-exporting .view-past .card,
+body.is-exporting .view-past .card:hover {
+    opacity: 1 !important;
+}
+body.is-exporting .card {
+    transition: none !important;
+}
+body.is-exporting .theme-effects {
+    visibility: hidden !important;
+}
