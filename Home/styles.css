@@ -1765,15 +1765,17 @@ button.month-day:focus-visible {
     line-height:1;
 }
 .month-day.is-agenda {
-    border-color:color-mix(in srgb,var(--accent-cyan) 42%,var(--border));
-    background:color-mix(in srgb,var(--accent-cyan) 7%,var(--bg-card));
+    border-color:rgba(96,165,250,.52);
+    background:linear-gradient(145deg,rgba(37,99,235,.18),rgba(23,43,70,.72));
 }
-.month-day.is-agenda .month-day-number { color:var(--accent-cyan); }
+.month-day.is-agenda .month-day-number,
+.month-day.is-agenda .month-day-event { color:#93c5fd; }
 .month-day.is-special {
-    border-color:color-mix(in srgb,var(--accent-amber) 58%,var(--border));
-    background:color-mix(in srgb,var(--accent-amber) 8%,var(--bg-card));
+    border-color:rgba(251,191,36,.58);
+    background:linear-gradient(145deg,rgba(245,158,11,.12),rgba(58,43,24,.68));
 }
-.month-day.is-special .month-day-number { color:var(--accent-amber); }
+.month-day.is-special .month-day-number,
+.month-day.is-special .month-day-event { color:#fbbf24; }
 .month-day.is-selected {
     box-shadow:inset 0 0 0 1px var(--accent-purple),0 0 0 1px color-mix(in srgb,var(--accent-purple) 26%,transparent);
 }
@@ -1819,11 +1821,11 @@ button.month-day:focus-visible {
     height:7px;
     display:inline-block;
     border-radius:50%;
-    background:var(--accent-cyan);
+    background:#60a5fa;
 }
-.month-legend-dot.special { background:var(--accent-amber); }
+.month-legend-dot.special { background:#fbbf24; }
 .month-legend-dot.theme { background:linear-gradient(90deg,#86efac,#c4b5fd,#fb923c,#facc15); }
-.month-legend-dot.today { background:var(--accent-emerald); }
+.month-legend-dot.today { background:#34d399; }
 
 @media (max-width:600px) {
     .nav { gap:7px; }
@@ -1858,4 +1860,4 @@ button.month-day:focus-visible {
 .month-day.theme-pentecostes .month-day-number, .month-day.theme-pentecostes .month-day-event { color:#fb923c; }
 .month-day.theme-aniversario { border-color:rgba(250,204,21,.66); background:linear-gradient(145deg,rgba(202,138,4,.23),rgba(53,48,29,.7)); }
 .month-day.theme-aniversario .month-day-number, .month-day.theme-aniversario .month-day-event { color:#facc15; }
-.month-day.is-selected { box-shadow:inset 0 0 0 1px var(--accent-purple),0 0 0 2px color-mix(in srgb,var(--accent-purple) 30%,transparent); }
+.month-day.is-selected { box-shadow:inset 0 0 0 1px rgba(196,181,253,.92),0 0 0 2px rgba(167,139,250,.28); }
