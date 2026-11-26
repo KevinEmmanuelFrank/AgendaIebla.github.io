@@ -2357,3 +2357,307 @@ button.month-day:focus-visible {
     .tag { min-width: 0; flex: 1 1 calc(50% - 4px); }
     .song-name { font-size: 13px; }
 }
+
+
+/* ── ETAPA 3 · MODO EDICIÓN ── */
+.edit-screen {
+    max-width: 920px;
+    margin: 0 auto;
+}
+.edit-date-header {
+    text-align: center;
+    margin: 4px 0 25px;
+    padding: 8px 0 17px;
+    border-bottom: 1px solid var(--border);
+}
+.edit-screen .edit-date-num {
+    font-family: 'Instrument Serif', serif;
+    font-size: clamp(68px, 9vw, 84px) !important;
+    font-weight: 400;
+    font-style: italic;
+    line-height: .94;
+    letter-spacing: -.025em;
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.edit-date-meta {
+    margin-top: 8px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .24em;
+    text-transform: uppercase;
+}
+.edit-screen .edit-special-title { margin-top: 10px; }
+.edit-screen .card-header { align-items: center; }
+.edit-count-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 25px;
+    padding: 4px 10px;
+    border: 1px solid rgba(34,211,238,.22);
+    border-radius: 999px;
+    background: rgba(34,211,238,.07);
+    color: var(--accent-cyan);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .035em;
+    white-space: nowrap;
+}
+.edit-section-help {
+    margin: 9px 1px 0;
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.55;
+}
+.musicians-toggle-btn {
+    appearance: none;
+    position: relative;
+    min-height: 48px;
+    justify-content: flex-start;
+    padding: 11px 14px;
+    border-style: solid;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--accent-cyan) 7%, var(--bg-surface));
+    font-size: 11px;
+    letter-spacing: .075em;
+    text-align: left;
+}
+.musicians-toggle-btn:hover {
+    border-color: color-mix(in srgb, var(--accent-cyan) 58%, transparent);
+    background: color-mix(in srgb, var(--accent-cyan) 11%, var(--bg-surface));
+}
+.musicians-toggle-btn .musicians-toggle-label { flex: 1; }
+.musicians-toggle-arrow {
+    margin-left: auto;
+    color: var(--text-secondary);
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 1;
+}
+.musicians-grid-wrap.open {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+.edit-screen .musicians-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+.edit-screen .musician-row {
+    min-width: 0;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-surface) 90%, transparent);
+}
+.edit-screen .musician-row:hover {
+    transform: translateY(-1px);
+    border-color: color-mix(in srgb, var(--accent-cyan) 35%, var(--border));
+}
+.edit-screen .musician-row.selected {
+    background: color-mix(in srgb, var(--accent-cyan) 9%, var(--bg-surface));
+    border-color: color-mix(in srgb, var(--accent-cyan) 48%, var(--border));
+    box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent-cyan) 75%, transparent);
+}
+.edit-screen .musician-main {
+    min-height: 48px;
+    gap: 10px;
+    padding: 9px 11px;
+}
+.edit-screen .check-box {
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+}
+.edit-screen .musician-name {
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 650;
+}
+.edit-screen .musician-single-role {
+    max-width: 48%;
+    overflow-wrap: anywhere;
+    font-size: 9px;
+    letter-spacing: .04em;
+}
+.edit-screen .role-chips {
+    gap: 6px;
+    padding: 0 10px 11px 41px;
+}
+.edit-screen .role-chip {
+    appearance: none;
+    min-height: 31px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font: 600 10px/1.25 'DM Sans', sans-serif;
+    text-align: center;
+}
+.edit-screen .role-chip.role-active {
+    background: color-mix(in srgb, var(--accent-purple) 16%, var(--bg-surface));
+    border-color: color-mix(in srgb, var(--accent-purple) 60%, transparent);
+}
+.songs-edit-help { margin: -3px 1px 11px; }
+.edit-screen .edit-list { gap: 9px; }
+.edit-screen .edit-item {
+    min-height: 58px;
+    gap: 8px;
+    padding: 6px 7px;
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+}
+.edit-screen .edit-item:focus-within {
+    border-color: color-mix(in srgb, var(--accent-purple) 58%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-purple) 9%, transparent);
+}
+.edit-screen .edit-song-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent-purple) 12%, var(--bg-card));
+    color: var(--accent-purple);
+    font-size: 15px;
+    opacity: 1;
+}
+.edit-screen .edit-input {
+    min-height: 44px;
+    padding: 9px 5px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.edit-screen .move-btn {
+    width: 32px;
+    height: 26px;
+    border-radius: 8px;
+}
+.edit-screen .move-btn svg { width: 16px; height: 16px; }
+.edit-screen .del-btn {
+    width: 38px;
+    height: 38px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+}
+.edit-screen .del-btn:hover { border-color: rgba(248,113,113,.18); }
+.edit-screen .del-btn.del-confirm { border-color: rgba(239,68,68,.45); }
+.edit-screen .songs-empty-edit {
+    border: 1px dashed var(--border-bright);
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--bg-surface) 65%, transparent);
+}
+.edit-screen .danza-toggle {
+    gap: 9px;
+    padding: 7px 10px;
+    border: 1px solid color-mix(in srgb, var(--accent-emerald) 26%, var(--border));
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent-emerald) 6%, var(--bg-surface));
+}
+.edit-screen .danza-toggle input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+}
+.edit-screen .danza-toggle:focus-within .danza-toggle-track {
+    outline: 2px solid color-mix(in srgb, var(--accent-emerald) 68%, transparent);
+    outline-offset: 3px;
+}
+.edit-screen .danza-toggle-track { width: 40px; height: 23px; }
+.edit-screen .danza-toggle-label {
+    font-size: 10px;
+    letter-spacing: .065em;
+    text-transform: uppercase;
+}
+.edit-screen .danza-songs-list {
+    margin-top: 12px;
+    padding-top: 13px;
+    border-top: 1px solid color-mix(in srgb, var(--accent-emerald) 18%, var(--border));
+}
+.edit-screen .danza-song-row {
+    min-height: 46px;
+    padding: 10px 12px;
+    border-radius: 12px;
+}
+.edit-screen .card-amber .notes-textarea {
+    min-height: 156px;
+    line-height: 1.7;
+}
+.edit-screen .save-row {
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px 18px;
+    margin-top: 20px;
+    padding: 20px 2px 0;
+}
+.edit-screen .btn-save {
+    min-width: min(100%, 250px);
+    min-height: 49px;
+    padding: 13px 24px;
+    border-radius: 13px;
+    letter-spacing: .065em;
+    box-shadow: 0 8px 22px rgba(16,185,129,.12);
+}
+.edit-screen .btn-save:disabled {
+    cursor: wait;
+    opacity: .78;
+    transform: none;
+}
+.edit-screen .save-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--text-muted);
+}
+.edit-screen .advanced-trigger-row { margin-top: 12px; }
+.edit-screen .btn-advanced {
+    min-height: 47px;
+    border-radius: 12px;
+    font-size: 11px;
+}
+.edit-screen button:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent-cyan) 75%, white);
+    outline-offset: 3px;
+}
+@media (max-width: 680px) {
+    .edit-screen .musicians-grid { grid-template-columns: 1fr; }
+    .edit-screen .save-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .edit-screen .btn-save { width: 100%; }
+    .edit-screen .save-hint { justify-content: center; }
+}
+@media (max-width: 600px) {
+    .edit-date-header {
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+    }
+    .edit-screen .card-header { gap: 10px; }
+    .edit-count-pill { min-height: 23px; padding: 3px 8px; font-size: 9px; }
+    .edit-screen .musicians-toggle-btn {
+        min-height: 46px;
+        padding: 10px 12px;
+    }
+    .edit-screen .edit-item { min-height: 56px; }
+    .edit-screen .edit-input { font-size: 14px; }
+    .edit-screen .danza-toggle { padding: 6px 8px; gap: 7px; }
+    .edit-screen .danza-toggle-label { font-size: 9px; }
+    .edit-screen .save-row { margin-top: 17px; padding-top: 17px; }
+    .edit-screen .advanced-trigger-row { margin-top: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .edit-screen .musician-row,
+    .edit-screen .edit-item,
+    .edit-screen .btn-save,
+    .edit-screen .musicians-toggle-btn {
+        transition: none !important;
+        transform: none !important;
+    }
+}
