@@ -1304,34 +1304,100 @@ async function addSpecialDate() {
         exportBtn.disabled = true;
 
         try {
-            if (!window.html2canvas) {
-                await new Promise((res, rej) => {
-                    const s = document.createElement('script');
-                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                    s.onload = res; s.onerror = rej;
-                    document.head.appendChild(s);
+            if (typeof window.html2canvas !== 'function') {
+                await new Promise((resolve, reject) => {
+                    const sources = [
+                        'https://cdn.jsdelivr.net/npm/html2canvas-pro@2.6.4/dist/html2canvas-pro.min.js',
+                        'https://unpkg.com/html2canvas-pro@2.6.4/dist/html2canvas-pro.min.js'
+                    ];
+                    let sourceIndex = 0;
+                    const loadNextSource = () => {
+                        if (sourceIndex >= sources.length) {
+                            reject(new Error('No se pudo cargar el motor de captura. Revisá tu conexión.'));
+                            return;
+                        }
+                        const script = document.createElement('script');
+                        script.src = sources[sourceIndex++];
+                        script.async = true;
+                        script.referrerPolicy = 'no-referrer';
+                        script.onload = () => {
+                            if (typeof window.html2canvas === 'function') resolve();
+                            else {
+                                script.remove();
+                                loadNextSource();
+                            }
+                        };
+                        script.onerror = () => {
+                            script.remove();
+                            loadNextSource();
+                        };
+                        document.head.appendChild(script);
+                    };
+                    loadNextSource();
                 });
+            }
+            if (typeof window.html2canvas !== 'function') {
+                throw new Error('El motor de captura no está disponible.');
             }
             hide();
             const content = document.getElementById('contentArea');
             content.prepend(exportHeader);
-            // Measure real content height after prepend (fixes mobile clipping)
-            const realHeight = content.offsetHeight;
-            const realWidth = content.offsetWidth;
+            // Esperar tipografías y recursos para evitar capturas incompletas.
+            if (document.fonts && document.fonts.ready) {
+                await Promise.race([
+                    document.fonts.ready,
+                    new Promise(resolve => setTimeout(resolve, 4000))
+                ]);
+            }
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+            // Usar el alto/ancho de todo el contenido y reducir escala en móviles si hace falta.
+            const realHeight = Math.max(content.scrollHeight, content.clientHeight);
+            const realWidth = Math.max(content.scrollWidth, content.clientWidth);
+            const maxPixels = 16000000;
+            const maxDimension = 10000;
+            const captureScale = Math.min(
+                2,
+                Math.sqrt(maxPixels / (realWidth * realHeight)),
+                maxDimension / realWidth,
+                maxDimension / realHeight
+            );
             const canvas = await window.html2canvas(content, {
-                scale: 2, useCORS: true,
+                scale: captureScale, useCORS: true,
                 backgroundColor: '#0e1220',
                 width: realWidth,
-                height: realHeight
+                height: realHeight,
+                logging: false,
+                imageTimeout: 15000
             });
             exportHeader.remove();
+            let imageUrl = '';
+            let shouldRevokeUrl = false;
+            if (typeof canvas.toBlob === 'function') {
+                const imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+                if (imageBlob) {
+                    imageUrl = URL.createObjectURL(imageBlob);
+                    shouldRevokeUrl = true;
+                }
+            }
+            if (!imageUrl) imageUrl = canvas.toDataURL('image/png');
+
             const link = document.createElement('a');
             link.download = `IEBLA-${dateKey}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.href = imageUrl;
+            document.body.appendChild(link);
             link.click();
+            link.remove();
+            if (shouldRevokeUrl) setTimeout(() => URL.revokeObjectURL(imageUrl), 1500);
         } catch (error) {
-            console.error(error);
-            alert('Error generando imagen. Verificá tu conexión e intentá de nuevo.');
+            console.error('Error generando imagen de Agenda IEBLA:', error);
+            const detail = error?.message || 'Error desconocido.';
+            const hint = /unsupported color function/i.test(detail)
+                ? 'El motor de captura encontró un color CSS no compatible.'
+                : /taint|cors|cross-origin/i.test(detail)
+                    ? 'Un recurso externo bloqueó la imagen. Revisá la conexión.'
+                    : 'Revisá la conexión e intentá nuevamente.';
+            alert(`No se pudo generar la imagen. ${hint}\n\nDetalle: ${detail.slice(0, 180)}`);
         } finally {
             if (document.getElementById('exportHeader')) exportHeader.remove();
             show();
