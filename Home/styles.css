@@ -2107,3 +2107,253 @@ button.month-day:focus-visible {
         letter-spacing: .08em;
     }
 }
+
+/* ETAPA 2 — Tarjetas y organización del contenido */
+/* Unifica las tarjetas sin anular los fondos propios de cada celebración. */
+.card {
+    padding: 22px;
+    border-radius: 17px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.09), inset 0 1px 0 rgba(255,255,255,.025);
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.card:hover {
+    box-shadow: 0 10px 28px rgba(0,0,0,.13), inset 0 1px 0 rgba(255,255,255,.035);
+}
+.card-cyan { border-top-color: color-mix(in srgb, var(--accent-cyan) 58%, transparent); }
+.card-purple { border-top-color: color-mix(in srgb, var(--accent-purple) 58%, transparent); }
+.card-amber { border-top-color: color-mix(in srgb, var(--accent-amber) 58%, transparent); }
+.card-emerald {
+    background: color-mix(in srgb, var(--bg-card) 94%, var(--accent-emerald) 6%);
+    border-color: color-mix(in srgb, var(--accent-emerald) 24%, var(--border));
+    border-top-color: color-mix(in srgb, var(--accent-emerald) 58%, transparent);
+}
+
+.card-header {
+    min-height: 28px;
+    padding-bottom: 13px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+}
+.card-title {
+    gap: 9px;
+    font-size: 12px;
+    letter-spacing: .14em;
+    line-height: 1.35;
+}
+.card-title .dot {
+    width: 7px;
+    height: 7px;
+    box-shadow: 0 0 7px currentColor;
+}
+
+/* Equipo: integrantes fáciles de recorrer y roles con jerarquía clara. */
+.tags-wrap { gap: 9px; }
+.tag {
+    min-width: 112px;
+    padding: 9px 12px;
+    gap: 4px;
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--bg-card) 84%, var(--accent-cyan) 16%);
+    border-color: color-mix(in srgb, var(--accent-cyan) 27%, transparent);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.tag-name {
+    font-size: 13px;
+    line-height: 1.3;
+}
+.tag-roles {
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: .035em;
+}
+
+/* Canciones: una fila por canción, con numeración más legible. */
+.card-purple .song-item {
+    gap: 12px;
+    min-height: 52px;
+    margin: 6px 0;
+    padding: 9px 11px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-surface) 62%, transparent);
+}
+.card-purple .song-item:last-child {
+    border-bottom: 1px solid var(--border);
+}
+.song-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent-purple) 13%, transparent);
+    font-size: 18px;
+    opacity: 1;
+}
+.song-divider { display: none; }
+.song-name {
+    font-size: 15px;
+    line-height: 1.45;
+    font-weight: 600;
+}
+.danza-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 26px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--accent-emerald) 11%, transparent);
+}
+
+/* Notas: lectura despejada, sin el efecto de papel rayado anterior. */
+.card-amber .notes-text {
+    padding: 3px 0 3px 14px;
+    border-left: 2px solid color-mix(in srgb, var(--accent-amber) 55%, transparent);
+    background: none;
+    font-size: 14px;
+    line-height: 1.8;
+    overflow-wrap: anywhere;
+}
+.card-amber .empty-state {
+    padding: 17px 0 12px;
+}
+.card-amber .notes-textarea {
+    min-height: 148px;
+    padding: 12px 14px;
+    border: 1px solid color-mix(in srgb, var(--accent-amber) 22%, var(--border));
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--bg-surface) 72%, transparent);
+    line-height: 1.75;
+    resize: vertical;
+}
+.card-amber .notes-textarea:focus {
+    border-color: color-mix(in srgb, var(--accent-amber) 58%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-amber) 9%, transparent);
+}
+.card-amber .notes-textarea::placeholder { opacity: .55; }
+
+/* Worshipers: el estado y las canciones seleccionadas quedan más claros. */
+.danza-banner {
+    margin-top: 13px;
+    padding: 10px 12px;
+    border-radius: 11px;
+    font-size: 12px;
+    line-height: 1.45;
+}
+.danza-section-desc {
+    margin-top: -3px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+.danza-hint {
+    margin-bottom: 9px;
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: .015em;
+}
+.danza-song-row {
+    min-height: 42px;
+    padding: 9px 11px;
+    border-radius: 11px;
+    line-height: 1.4;
+}
+.danza-song-row:last-child { margin-bottom: 0; }
+
+/* Estados vacíos más discretos: orientan sin competir con el contenido. */
+.card .empty-state {
+    padding: 19px 8px 15px;
+}
+.card .empty-state svg {
+    width: 25px;
+    height: 25px;
+    margin-bottom: 7px;
+    opacity: .38;
+}
+.card .empty-state .empty-label {
+    font-size: 13px;
+    font-weight: 600;
+}
+.card .empty-state .empty-hint {
+    font-size: 11px;
+    line-height: 1.45;
+}
+
+/* La misma proporción visual se conserva al compartir una vista previa. */
+.page-preview-shell .card {
+    padding: 18px;
+    border-radius: 14px;
+}
+.page-preview-shell .card-header {
+    padding-bottom: 11px;
+    margin-bottom: 13px;
+}
+.page-preview-shell .tag {
+    min-width: 0;
+    padding: 7px 9px;
+}
+.page-preview-shell .song-name { font-size: 13px; }
+
+/* Ajustes táctiles para móviles. */
+@media (max-width: 600px) {
+    .card {
+        padding: 17px;
+        margin-bottom: 13px;
+        border-radius: 15px;
+    }
+    .card-header {
+        min-height: 26px;
+        padding-bottom: 11px;
+        margin-bottom: 13px;
+    }
+    .card-title {
+        font-size: 11px;
+        letter-spacing: .12em;
+    }
+    .tags-wrap { gap: 7px; }
+    .tag {
+        min-width: min(132px, calc(50% - 4px));
+        flex: 1 1 calc(50% - 4px);
+        padding: 8px 10px;
+    }
+    .tag-name { font-size: 12px; }
+    .tag-roles { font-size: 9px; }
+    .card-purple .song-item {
+        min-height: 48px;
+        margin: 5px 0;
+        padding: 8px 9px;
+        gap: 10px;
+    }
+    .song-num {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        font-size: 17px;
+    }
+    .song-name { font-size: 14px; }
+    .card-amber .notes-text {
+        padding-left: 11px;
+        font-size: 13px;
+        line-height: 1.75;
+    }
+    .card-amber .notes-textarea {
+        min-height: 132px;
+        padding: 11px 12px;
+        font-size: 14px;
+    }
+    .danza-banner {
+        padding: 9px 10px;
+        font-size: 11px;
+    }
+    .card .empty-state { padding: 16px 6px 12px; }
+    .card .empty-state .empty-hint { font-size: 10px; }
+    .page-preview-shell .card { padding: 14px; }
+}
+@media (max-width: 380px) {
+    .card { padding: 15px; }
+    .card-header { padding-bottom: 10px; margin-bottom: 11px; }
+    .tag { min-width: 0; flex: 1 1 calc(50% - 4px); }
+    .song-name { font-size: 13px; }
+}
