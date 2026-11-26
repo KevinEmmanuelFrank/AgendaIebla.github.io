@@ -2556,7 +2556,9 @@ button.month-day:focus-visible {
     border-radius: 999px;
     background: color-mix(in srgb, var(--accent-emerald) 6%, var(--bg-surface));
 }
+.edit-screen .danza-toggle { position: relative; }
 .edit-screen .danza-toggle input {
+    display: block;
     position: absolute;
     width: 1px;
     height: 1px;
