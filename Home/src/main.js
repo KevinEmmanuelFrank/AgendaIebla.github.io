@@ -732,6 +732,7 @@ async function addSpecialDate() {
                     else return; // silently ignore — must keep at least one role
                 }
                 chip.classList.toggle('role-active', m.roles.includes(role));
+                chip.setAttribute('aria-pressed', String(m.roles.includes(role)));
                 debouncedSave();
                 return;
             }
@@ -743,10 +744,12 @@ async function addSpecialDate() {
             const cfg = AppState.musiciansConfig.find(c => c.name === name);
             const existingIdx = musicians.findIndex(x => x.name === name);
 
+            const musicianControl = row.querySelector('.musician-main');
             if (existingIdx !== -1) {
                 // Deselect
                 musicians.splice(existingIdx, 1);
                 row.classList.remove('selected');
+                if (musicianControl) musicianControl.setAttribute('aria-pressed', 'false');
                 const chips = row.querySelector('.role-chips');
                 if (chips) chips.classList.add('role-chips-hidden');
             } else {
@@ -754,6 +757,7 @@ async function addSpecialDate() {
                 const defaultRoles = [cfg.roles[0]];
                 musicians.push({ name, roles: defaultRoles });
                 row.classList.add('selected');
+                if (musicianControl) musicianControl.setAttribute('aria-pressed', 'true');
                 const chips = row.querySelector('.role-chips');
                 if (chips) {
                     chips.classList.remove('role-chips-hidden');
@@ -770,6 +774,18 @@ async function addSpecialDate() {
             }
             debouncedSave();
         });
+
+        // Keyboard support for the musician selection row.
+        const musiciansGrid = document.getElementById('musiciansGrid');
+        if (musiciansGrid) {
+            musiciansGrid.addEventListener('keydown', (e) => {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                const trigger = e.target.closest('.musician-main[role="button"]');
+                if (!trigger || !musiciansGrid.contains(trigger)) return;
+                e.preventDefault();
+                trigger.click();
+            });
+        }
 
         // Add song
         document.getElementById('add-songs').addEventListener('click', () => addItem('songs'));
