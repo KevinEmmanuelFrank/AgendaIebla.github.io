@@ -1336,7 +1336,12 @@ async function addSpecialDate() {
                         script.src = sources[sourceIndex++];
                         script.async = true;
                         script.referrerPolicy = 'no-referrer';
+                        const loadTimeout = setTimeout(() => {
+                            script.remove();
+                            loadNextSource();
+                        }, 10000);
                         script.onload = () => {
+                            clearTimeout(loadTimeout);
                             if (typeof window.html2canvas === 'function') resolve();
                             else {
                                 script.remove();
@@ -1344,6 +1349,7 @@ async function addSpecialDate() {
                             }
                         };
                         script.onerror = () => {
+                            clearTimeout(loadTimeout);
                             script.remove();
                             loadNextSource();
                         };
