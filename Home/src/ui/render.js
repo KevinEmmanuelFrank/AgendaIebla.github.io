@@ -92,7 +92,7 @@ export function escapeHtml(str) {
                 ? record.specialTitle.trim()
                 : hasCustomTheme
                     ? themeLabels[theme]
-                    : isSpecial ? 'Fecha especial' : 'Culto dominical';
+                    : isSpecial ? 'Fecha especial' : 'Celebración';
             const ariaLabel = isAgendaDate
                 ? `${weekday} ${day} de ${monthNames[month]}: ${eventLabel}`
                 : `${weekday} ${day} de ${monthNames[month]}`;
@@ -121,7 +121,7 @@ export function escapeHtml(str) {
             </div>
             <div class="month-grid">${cells.join('')}</div>
             <div class="month-legend">
-                <span><i class="month-legend-dot sunday"></i> Culto habitual</span>
+                <span><i class="month-legend-dot sunday"></i> Celebración</span>
                 <span><i class="month-legend-dot theme"></i> Tema personalizado</span>
                 <span><i class="month-legend-dot special"></i> Otra fecha especial</span>
                 <span><i class="month-legend-dot today"></i> Hoy</span>
