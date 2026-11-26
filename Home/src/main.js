@@ -1361,6 +1361,8 @@ async function addSpecialDate() {
             if (typeof window.html2canvas !== 'function') {
                 throw new Error('El motor de captura no está disponible.');
             }
+            // Evitar capturar la animación de entrada a mitad de camino.
+            document.body.classList.add('is-exporting');
             hide();
             const content = document.getElementById('contentArea');
             content.prepend(exportHeader);
@@ -1421,6 +1423,7 @@ async function addSpecialDate() {
                     : 'Revisá la conexión e intentá nuevamente.';
             alert(`No se pudo generar la imagen. ${hint}\n\nDetalle: ${detail.slice(0, 180)}`);
         } finally {
+            document.body.classList.remove('is-exporting');
             if (document.getElementById('exportHeader')) exportHeader.remove();
             show();
             exportBtn.innerHTML = camIcon;
