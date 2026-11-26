@@ -397,10 +397,10 @@ export function escapeHtml(str) {
             const hasMultipleRoles = cfg.roles.length > 1;
             const roleChips = hasMultipleRoles ? cfg.roles.map(role => {
                 const active = selectedRoles.includes(role) ? 'role-active' : '';
-                return `<button type="button" class="role-chip ${active}" data-musician="${cfg.name}" data-role="${role}">${role}</button>`;
+                return `<button type="button" class="role-chip ${active}" data-musician="${cfg.name}" data-role="${role}" aria-pressed="${selectedRoles.includes(role)}">${role}</button>`;
             }).join('') : '';
             return `<div class="musician-row ${isSelected ? 'selected' : ''}" data-musician="${cfg.name}">
-                <div class="musician-main">
+                <div class="musician-main" role="button" tabindex="0" aria-pressed="${isSelected}" aria-label="${cfg.name}">
                     <div class="check-box">
                         <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M2 6l3 3 5-5"/></svg>
                     </div>
@@ -442,7 +442,7 @@ export function escapeHtml(str) {
             <div class="card card-cyan edit-card-musicians" style="margin-bottom:16px">
                 <div class="card-header">
                     <div class="card-title"><div class="dot dot-cyan"></div><span>Equipo Musical</span></div>
-                    <span class="edit-count-pill" id="musiciansSelectedCount">${data.musicians.length} ${data.musicians.length === 1 ? 'seleccionado' : 'seleccionados'}</span>
+                    <span class="edit-count-pill" id="musiciansSelectedCount" aria-live="polite">${data.musicians.length} ${data.musicians.length === 1 ? 'seleccionado' : 'seleccionados'}</span>
                 </div>
                 <button id="musiciansToggleBtn" class="musicians-toggle-btn" type="button" aria-expanded="false" aria-controls="musiciansGridWrap">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 0 0 0 0 7.75"/></svg>
