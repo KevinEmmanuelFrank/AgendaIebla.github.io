@@ -2663,3 +2663,45 @@ button.month-day:focus-visible {
         transform: none !important;
     }
 }
+
+
+/* Corrección: estados de roles seleccionados y no seleccionados más intuitivos. */
+.edit-screen .role-chip {
+    border: 1px solid rgba(148,163,184,.24);
+    background: rgba(148,163,184,.09);
+    color: #cbd5e1;
+    opacity: 1;
+}
+.edit-screen .role-chip:hover,
+.edit-screen .role-chip:focus-visible {
+    border-color: rgba(148,163,184,.48);
+    background: rgba(148,163,184,.15);
+    color: #e2e8f0;
+}
+.edit-screen .role-chip.role-active,
+.edit-screen .role-chip.role-active:hover {
+    border: 1px solid color-mix(in srgb, var(--accent-purple) 72%, white 8%);
+    background: color-mix(in srgb, var(--accent-purple) 22%, var(--bg-surface));
+    color: #ddd6fe;
+    box-shadow: inset 0 0 0 1px rgba(167,139,250,.08);
+}
+
+/* El nombre de la celebración debe adaptarse al ancho real de cada día. */
+.month-day-event {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    text-align: center;
+    line-height: 1.15;
+    -webkit-line-clamp: 3;
+}
+@media (max-width: 600px) {
+    .month-day-event { font-size: 7px; }
+}
+@media (max-width: 380px) {
+    .month-day-event {
+        font-size: 6px;
+        letter-spacing: -.015em;
+    }
+}
