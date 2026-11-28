@@ -46,7 +46,8 @@ export function subscribeToMonth(db, appId, year, month, onData, onError) {
 
 export function saveMonth(db, appId, year, month, data) {
     const reference = monthDocument(db, appId, year, month);
-    return setDoc(reference, data);
+    // Merge date entries so a stale/partial client cannot erase other dates in the month.
+    return setDoc(reference, data, { merge: true });
 }
 
 
