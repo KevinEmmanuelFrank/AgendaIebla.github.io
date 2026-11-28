@@ -530,7 +530,7 @@ export function renderMusicianConfigRow(musician = {}, index = 0) {
             <input class="musician-config-name" type="text" maxlength="45" value="${escapeHtml(name)}" placeholder="Ej. Ana" autocomplete="off">
         </label>
         <label class="musician-config-field musician-config-field--roles">
-            <span>Instrumentos y funciones</span>
+            <span>Instrumentos y funciones (separados por coma)</span>
             <input class="musician-config-roles" type="text" maxlength="220" value="${escapeHtml(roles)}" placeholder="Ej. voz apoyo, guitarra, teclado" autocomplete="off">
         </label>
         <button class="musician-config-remove" type="button" data-remove-musician-config aria-label="Quitar integrante" title="Quitar integrante">×</button>
@@ -617,7 +617,7 @@ export function renderMusicianConfigRow(musician = {}, index = 0) {
                     <div class="card-title"><div class="dot dot-cyan"></div><span>Músicos e instrumentos</span></div>
                     <span class="edit-count-pill" id="musiciansConfigCount">${AppState.musiciansConfig.length} ${AppState.musiciansConfig.length === 1 ? 'integrante' : 'integrantes'}</span>
                 </div>
-                <p class="advanced-description">Administrá quiénes aparecen en el selector del equipo y qué instrumentos o funciones puede realizar cada persona. Podés agregar integrantes, cambiar nombres, modificar sus funciones o quitarlos del listado.</p>
+                <p class="advanced-description">Administrá quiénes aparecen en el selector del equipo y qué instrumentos o funciones puede realizar cada persona. Podés agregar integrantes, cambiar nombres, modificar sus funciones o quitarlos del listado. Separá varias opciones con comas.</p>
                 <div class="musician-config-list" id="musiciansConfigList">
                     ${musicianConfigRows}
                 </div>
