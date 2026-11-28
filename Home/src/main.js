@@ -430,8 +430,8 @@ function setupMusiciansConfigListener() {
             const changed = JSON.stringify(normalized) !== JSON.stringify(AppState.musiciansConfig);
             AppState.musiciansConfig = normalized;
 
-            // No reemplazar un formulario que el usuario esté editando en este momento.
-            if (changed && !(AppState.viewMode === 'edit' && AppState.editorScreen === 'advanced')) {
+            // No reemplazar ningún formulario de edición que pueda contener cambios sin guardar.
+            if (changed && AppState.viewMode === 'view') {
                 render();
             }
         },
