@@ -6,6 +6,7 @@ import { renderContent, renderFullPagePreview, applyPageTheme, escapeHtml, rende
 
 let db;
 let musiciansConfigUnsubscribe = null;
+let isMonthDataLoaded = false;
 let editInputHandlerBound = false;
 let pendingMonthEdge = null;
 let isNavigatingMonth = false;
@@ -14,6 +15,9 @@ const getSundays = (month, year = getYear()) => buildSundays(month, year);
 
 function render() {
     renderContent();
+
+    const editModeButton = document.getElementById('toggleModeBtn');
+    if (editModeButton) editModeButton.disabled = !isMonthDataLoaded;
 
     const monthViewButton = document.getElementById('monthViewBtn');
     if (monthViewButton) {
@@ -431,7 +435,7 @@ function setupMusiciansConfigListener() {
             AppState.musiciansConfig = normalized;
 
             // No reemplazar ningún formulario de edición que pueda contener cambios sin guardar.
-            if (changed && AppState.viewMode === 'view') {
+            if (changed && isMonthDataLoaded && AppState.viewMode === 'view') {
                 render();
             }
         },
@@ -444,6 +448,9 @@ function setupMusiciansConfigListener() {
 function setupRealtimeListener() {
     if (AppState.unsubscribe) AppState.unsubscribe();
     AppState.skipNextSnapshot = 0;
+    isMonthDataLoaded = false;
+    const editModeButton = document.getElementById('toggleModeBtn');
+    if (editModeButton) editModeButton.disabled = true;
     if (!AppState.user || !db) return;
 
     setSyncStatus('saving', 'Sincronizando…');
@@ -462,6 +469,7 @@ function setupRealtimeListener() {
             }
 
             AppState.monthData = monthData || {};
+            isMonthDataLoaded = true;
             refreshAgendaDates(AppState.pendingDateKey, pendingMonthEdge);
             AppState.pendingDateKey = null;
             pendingMonthEdge = null;
@@ -1291,6 +1299,9 @@ async function addSpecialDate() {
 
     async function save() {
         if (!AppState.user || !db) return true;
+        if (!isMonthDataLoaded) {
+            throw new Error('La agenda todavía se está sincronizando. No se guardaron cambios para evitar reemplazar datos incompletos.');
+        }
         if (savePromise) {
             await savePromise;
             return true;
