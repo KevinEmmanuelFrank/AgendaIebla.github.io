@@ -1347,6 +1347,12 @@ async function addSpecialDate() {
     }
 
     function toggleMode() {
+        // Segunda barrera además del botón deshabilitado: nunca abrir edición
+        // si todavía no llegó la primera lectura completa de Firestore.
+        if (AppState.viewMode === 'view' && !isMonthDataLoaded) {
+            setSyncStatus('saving', 'Esperando datos de la agenda…');
+            return;
+        }
         AppState.viewMode = AppState.viewMode === 'view' ? 'edit' : 'view';
         AppState.calendarDisplay = 'agenda';
         AppState.editorScreen = 'edit';
