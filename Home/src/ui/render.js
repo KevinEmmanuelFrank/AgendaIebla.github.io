@@ -519,6 +519,24 @@ export function escapeHtml(str) {
     
 
 
+export function renderMusicianConfigRow(musician = {}, index = 0) {
+    const name = typeof musician.name === 'string' ? musician.name : '';
+    const roles = Array.isArray(musician.roles) ? musician.roles.join(', ') : '';
+
+    return `<div class="musician-config-row" data-musician-config-row>
+        <span class="musician-config-index" aria-hidden="true">${index + 1}</span>
+        <label class="musician-config-field musician-config-field--name">
+            <span>Nombre del integrante</span>
+            <input class="musician-config-name" type="text" maxlength="45" value="${escapeHtml(name)}" placeholder="Ej. Ana" autocomplete="off">
+        </label>
+        <label class="musician-config-field musician-config-field--roles">
+            <span>Instrumentos y funciones</span>
+            <input class="musician-config-roles" type="text" maxlength="220" value="${escapeHtml(roles)}" placeholder="Ej. voz apoyo, guitarra, teclado" autocomplete="off">
+        </label>
+        <button class="musician-config-remove" type="button" data-remove-musician-config aria-label="Quitar integrante" title="Quitar integrante">×</button>
+    </div>`;
+}
+
     function renderAdvanced(data, dateKey, dayNum, monthLabel, weekday) {
         const currentTheme = normalizeTheme(data.visualTheme);
         const optionsHTML = THEME_OPTIONS.map(option =>
@@ -526,6 +544,9 @@ export function escapeHtml(str) {
         ).join('');
         const title = typeof data.specialTitle === 'string' ? data.specialTitle : '';
         const effectsEnabled = data.visualEffects !== false;
+        const musicianConfigRows = AppState.musiciansConfig
+            .map((musician, index) => renderMusicianConfigRow(musician, index))
+            .join('');
 
         const copySources = AppState.agendaDates
             .filter(key => key !== dateKey && AppState.monthData[key] && typeof AppState.monthData[key] === 'object');
@@ -589,6 +610,23 @@ export function escapeHtml(str) {
                     <div id="advancedPreviewContent"></div>
                 </div>
                 <div class="advanced-feedback" id="specialDateFeedback" aria-live="polite"></div>
+            </section>
+
+            <section class="card advanced-card musician-config-card">
+                <div class="card-header">
+                    <div class="card-title"><div class="dot dot-cyan"></div><span>Músicos e instrumentos</span></div>
+                    <span class="edit-count-pill">${AppState.musiciansConfig.length} integrantes</span>
+                </div>
+                <p class="advanced-description">Administrá quiénes aparecen en el selector del equipo y qué instrumentos o funciones puede realizar cada persona. Podés agregar integrantes, cambiar nombres, modificar sus funciones o quitarlos del listado.</p>
+                <div class="musician-config-list" id="musiciansConfigList">
+                    ${musicianConfigRows}
+                </div>
+                <div class="musician-config-actions">
+                    <button class="btn-tool-secondary" id="addMusicianConfigBtn" type="button">＋ Agregar integrante</button>
+                    <button class="btn-save advanced-save-btn" id="saveMusiciansConfigBtn" type="button">Guardar equipo e instrumentos</button>
+                </div>
+                <p class="advanced-footnote">La lista se comparte con todos los usuarios de la agenda. Las fechas ya guardadas conservan sus asignaciones históricas; este cambio modifica el selector para las próximas ediciones.</p>
+                <div class="advanced-feedback" id="musiciansConfigFeedback" aria-live="polite"></div>
             </section>
 
             <section class="card advanced-card special-date-card">
