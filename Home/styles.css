@@ -2733,3 +2733,131 @@ body.is-exporting .card {
 body.is-exporting .theme-effects {
     visibility: hidden !important;
 }
+
+
+/* Administración del listado de músicos e instrumentos en Cambios avanzados. */
+.musician-config-list {
+    display: grid;
+    gap: 10px;
+}
+.musician-config-row {
+    display: grid;
+    grid-template-columns: 32px minmax(0, .9fr) minmax(0, 1.35fr) 42px;
+    align-items: end;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 13px;
+    background: color-mix(in srgb, var(--bg-surface) 82%, transparent);
+}
+.musician-config-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 27px;
+    height: 27px;
+    align-self: center;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent-cyan) 12%, transparent);
+    color: var(--accent-cyan);
+    font-size: 11px;
+    font-weight: 800;
+}
+.musician-config-field {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 7px;
+}
+.musician-config-field > span {
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .075em;
+    text-transform: uppercase;
+}
+.musician-config-field input {
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 10px 11px;
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font: 500 13px 'DM Sans', sans-serif;
+}
+.musician-config-field input:focus {
+    outline: none;
+    border-color: var(--accent-cyan);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-cyan) 11%, transparent);
+}
+.musician-config-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    min-height: 42px;
+    border: 1px solid rgba(248,113,113,.2);
+    border-radius: 10px;
+    background: rgba(248,113,113,.07);
+    color: #f87171;
+    font: 400 24px/1 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: background .18s ease, border-color .18s ease;
+}
+.musician-config-remove:hover {
+    border-color: rgba(248,113,113,.5);
+    background: rgba(248,113,113,.14);
+}
+.musician-config-actions {
+    display: grid;
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.25fr);
+    gap: 10px;
+    margin-top: 14px;
+}
+.musician-config-actions > button {
+    width: 100%;
+    min-height: 46px;
+    margin: 0;
+}
+.musician-config-actions .advanced-save-btn {
+    min-width: 0;
+    padding: 11px 14px;
+}
+.musician-config-card .advanced-footnote {
+    margin-top: 13px;
+}
+.musician-config-row button:focus-visible,
+.musician-config-actions button:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--accent-cyan) 75%, white);
+    outline-offset: 3px;
+}
+@media (max-width: 600px) {
+    .musician-config-row {
+        grid-template-columns: minmax(0, 1fr) 42px;
+        gap: 9px;
+        padding: 11px;
+    }
+    .musician-config-index {
+        grid-column: 1 / -1;
+        width: 25px;
+        height: 25px;
+    }
+    .musician-config-field--name {
+        grid-column: 1;
+        grid-row: 2;
+    }
+    .musician-config-remove {
+        grid-column: 2;
+        grid-row: 2;
+    }
+    .musician-config-field--roles {
+        grid-column: 1 / -1;
+        grid-row: 3;
+    }
+    .musician-config-actions {
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+}
