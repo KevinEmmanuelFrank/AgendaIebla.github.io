@@ -46,8 +46,16 @@ export function subscribeToMonth(db, appId, year, month, onData, onError) {
 
 export function saveMonth(db, appId, year, month, data) {
     const reference = monthDocument(db, appId, year, month);
-    // Merge date entries so a stale/partial client cannot erase other dates in the month.
-    return setDoc(reference, data, { merge: true });
+
+    // Leer la versión más reciente antes de escribir. Así una copia atrasada
+    // de un cliente no elimina otras fechas que ya existan en el mismo mes.
+    return runTransaction(db, async transaction => {
+        const snapshot = await transaction.get(reference);
+        const currentMonth = snapshot.exists() ? snapshot.data() : {};
+        const mergedMonth = { ...currentMonth, ...data };
+
+        transaction.set(reference, mergedMonth);
+    });
 }
 
 
