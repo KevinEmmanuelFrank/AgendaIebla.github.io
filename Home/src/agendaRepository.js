@@ -9,6 +9,31 @@ function monthDocument(db, appId, year, month) {
     return doc(db, "artifacts", appId, "public", "data", "months", monthKey);
 }
 
+/**
+ * Configuración global del equipo.
+ * Se guarda como un documento reservado dentro de la colección months,
+ * sin mezclarla con los documentos mensuales de la agenda.
+ */
+function musiciansConfigDocument(db, appId) {
+    return doc(db, "artifacts", appId, "public", "data", "months", "__musicians_config__");
+}
+
+export function subscribeToMusiciansConfig(db, appId, onData, onError) {
+    const reference = musiciansConfigDocument(db, appId);
+    return onSnapshot(
+        reference,
+        snapshot => {
+            const data = snapshot.exists() ? snapshot.data() : null;
+            onData(data && Array.isArray(data.musiciansConfig) ? data.musiciansConfig : null);
+        },
+        onError
+    );
+}
+
+export function saveMusiciansConfig(db, appId, musiciansConfig) {
+    return setDoc(musiciansConfigDocument(db, appId), { musiciansConfig });
+}
+
 export function subscribeToMonth(db, appId, year, month, onData, onError) {
     const reference = monthDocument(db, appId, year, month);
 
