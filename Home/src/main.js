@@ -1,10 +1,11 @@
 import { AppState } from "./state.js";
 import { monthNames, getSundays as buildSundays, getLocalISODate } from "./calendar.js";
 import { initializeFirebase, signInAnonymously } from "./firebase.js";
-import { subscribeToMonth, saveMonth, createSpecialDate } from "./agendaRepository.js";
-import { renderContent, renderFullPagePreview, applyPageTheme, escapeHtml } from "./ui/render.js";
+import { subscribeToMonth, saveMonth, createSpecialDate, subscribeToMusiciansConfig, saveMusiciansConfig } from "./agendaRepository.js";
+import { renderContent, renderFullPagePreview, applyPageTheme, escapeHtml, renderMusicianConfigRow } from "./ui/render.js";
 
 let db;
+let musiciansConfigUnsubscribe = null;
 let editInputHandlerBound = false;
 let pendingMonthEdge = null;
 let isNavigatingMonth = false;
@@ -140,6 +141,7 @@ let connectTimeout;
         setupEventListeners();
 
         stage = 'Conectar con Firestore';
+        setupMusiciansConfigListener();
         setupRealtimeListener();
         updateTodayLabel();
     } catch (error) {
@@ -392,6 +394,53 @@ async function navigateDate(direction) {
     setupRealtimeListener();
 }
 
+function normalizeMusiciansConfig(config) {
+    if (!Array.isArray(config)) return null;
+
+    const names = new Set();
+    const normalized = [];
+
+    config.forEach(person => {
+        if (!person || typeof person.name !== 'string' || !Array.isArray(person.roles)) return;
+        const name = person.name.trim();
+        const key = name.toLocaleLowerCase('es');
+        const roles = [...new Set(person.roles
+            .filter(role => typeof role === 'string')
+            .map(role => role.trim())
+            .filter(Boolean))];
+
+        if (!name || !roles.length || names.has(key)) return;
+        names.add(key);
+        normalized.push({ name, roles });
+    });
+
+    return normalized;
+}
+
+function setupMusiciansConfigListener() {
+    if (!db || musiciansConfigUnsubscribe) return;
+
+    musiciansConfigUnsubscribe = subscribeToMusiciansConfig(
+        db,
+        AppState.appId,
+        config => {
+            const normalized = normalizeMusiciansConfig(config);
+            if (!normalized) return;
+
+            const changed = JSON.stringify(normalized) !== JSON.stringify(AppState.musiciansConfig);
+            AppState.musiciansConfig = normalized;
+
+            // No reemplazar un formulario que el usuario esté editando en este momento.
+            if (changed && !(AppState.viewMode === 'edit' && AppState.editorScreen === 'advanced')) {
+                render();
+            }
+        },
+        error => {
+            console.error('No se pudo cargar el listado compartido de músicos:', error);
+        }
+    );
+}
+
 function setupRealtimeListener() {
     if (AppState.unsubscribe) AppState.unsubscribe();
     AppState.skipNextSnapshot = 0;
@@ -469,8 +518,122 @@ function bindAdvancedEvents() {
     document.getElementById('visualEffectsCheck')?.addEventListener('change', refreshAdvancedPreview);
     document.getElementById('copyThemeBtn')?.addEventListener('click', copyThemeFromAnotherDate);
     document.getElementById('resetThemeBtn')?.addEventListener('click', resetAdvancedTheme);
+    document.getElementById('addMusicianConfigBtn')?.addEventListener('click', addMusicianConfigRow);
+    document.getElementById('musiciansConfigList')?.addEventListener('click', handleMusicianConfigListClick);
+    document.getElementById('saveMusiciansConfigBtn')?.addEventListener('click', saveMusiciansConfigSettings);
 }
 
+
+function refreshMusicianConfigRowNumbers() {
+    const list = document.getElementById('musiciansConfigList');
+    if (!list) return;
+
+    Array.from(list.querySelectorAll('.musician-config-row')).forEach((row, index) => {
+        const number = row.querySelector('.musician-config-index');
+        if (number) number.textContent = String(index + 1);
+    });
+
+    const count = document.getElementById('musiciansConfigCount');
+    if (count) {
+        const total = list.querySelectorAll('.musician-config-row').length;
+        count.textContent = `${total} ${total === 1 ? 'integrante' : 'integrantes'}`;
+    }
+}
+
+function addMusicianConfigRow() {
+    const list = document.getElementById('musiciansConfigList');
+    if (!list) return;
+
+    list.insertAdjacentHTML('beforeend', renderMusicianConfigRow({ name: '', roles: [] }, list.children.length));
+    refreshMusicianConfigRowNumbers();
+    list.lastElementChild?.querySelector('.musician-config-name')?.focus();
+}
+
+function handleMusicianConfigListClick(event) {
+    const removeButton = event.target.closest('[data-remove-musician-config]');
+    if (!removeButton) return;
+
+    removeButton.closest('.musician-config-row')?.remove();
+    refreshMusicianConfigRowNumbers();
+}
+
+function showMusicianConfigFeedback(message, type = 'info') {
+    const feedback = document.getElementById('musiciansConfigFeedback');
+    if (!feedback) return;
+    feedback.textContent = message;
+    feedback.className = 'advanced-feedback ' + type;
+}
+
+async function saveMusiciansConfigSettings() {
+    const list = document.getElementById('musiciansConfigList');
+    const button = document.getElementById('saveMusiciansConfigBtn');
+    if (!list || !button) return;
+
+    const rows = Array.from(list.querySelectorAll('.musician-config-row'));
+    const nextConfig = [];
+    const seenNames = new Set();
+
+    for (let index = 0; index < rows.length; index++) {
+        const row = rows[index];
+        const name = row.querySelector('.musician-config-name')?.value.trim() || '';
+        const rawRoles = row.querySelector('.musician-config-roles')?.value || '';
+        const roles = [...new Set(rawRoles.split(',').map(role => role.trim()).filter(Boolean))];
+
+        if (!name) {
+            showMusicianConfigFeedback(`Completá el nombre del integrante ${index + 1}.`, 'error');
+            row.querySelector('.musician-config-name')?.focus();
+            return;
+        }
+        if (!roles.length) {
+            showMusicianConfigFeedback(`Agregá al menos un instrumento o función para ${name}.`, 'error');
+            row.querySelector('.musician-config-roles')?.focus();
+            return;
+        }
+
+        const key = name.toLocaleLowerCase('es');
+        if (seenNames.has(key)) {
+            showMusicianConfigFeedback(`El nombre "${name}" está repetido. Cada integrante debe tener un nombre único.`, 'error');
+            row.querySelector('.musician-config-name')?.focus();
+            return;
+        }
+
+        seenNames.add(key);
+        nextConfig.push({ name, roles });
+    }
+
+    if (!nextConfig.length) {
+        showMusicianConfigFeedback('El listado no puede quedar vacío. Agregá al menos un integrante.', 'error');
+        return;
+    }
+
+    if (!db) {
+        showMusicianConfigFeedback('No hay conexión con la base de datos. Revisá la conexión e intentá nuevamente.', 'error');
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Guardando equipo…';
+
+    try {
+        await saveMusiciansConfig(db, AppState.appId, nextConfig);
+        AppState.musiciansConfig = nextConfig;
+        refreshMusicianConfigRowNumbers();
+        showMusicianConfigFeedback('El listado de músicos e instrumentos se guardó correctamente y ya está disponible para todos.', 'success');
+        button.textContent = '¡Guardado!';
+        setTimeout(() => {
+            const currentButton = document.getElementById('saveMusiciansConfigBtn');
+            if (currentButton) {
+                currentButton.disabled = false;
+                currentButton.textContent = 'Guardar equipo e instrumentos';
+            }
+        }, 1600);
+    } catch (error) {
+        console.error('Error al guardar el listado de músicos:', error);
+        button.disabled = false;
+        button.textContent = 'Reintentar guardado';
+        showMusicianConfigFeedback('No se pudo guardar el listado. Verificá la conexión e intentá nuevamente.', 'error');
+    }
+}
 
 
 function copyThemeFromAnotherDate() {
