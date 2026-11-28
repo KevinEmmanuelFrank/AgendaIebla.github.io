@@ -569,6 +569,26 @@ export function renderMusicianConfigRow(musician = {}, index = 0) {
                 <p>${weekday} ${dayNum} de ${monthLabel} de ${AppState.currentYear}</p>
             </div>
 
+            <details class="card advanced-card musician-config-card">
+                <summary class="card-header musician-config-summary">
+                    <div class="card-title"><div class="dot dot-cyan"></div><span>Músicos e instrumentos</span></div>
+                    <span class="edit-count-pill" id="musiciansConfigCount">${AppState.musiciansConfig.length} ${AppState.musiciansConfig.length === 1 ? 'integrante' : 'integrantes'}</span>
+                    <span class="musician-config-chevron" aria-hidden="true">⌄</span>
+                </summary>
+                <div class="musician-config-body">
+                    <p class="advanced-description">Administrá quiénes aparecen en el selector del equipo y qué instrumentos o funciones puede realizar cada persona. Podés agregar integrantes, cambiar nombres, modificar sus funciones o quitarlos del listado. Separá varias opciones con comas.</p>
+                <div class="musician-config-list" id="musiciansConfigList">
+                    ${musicianConfigRows}
+                </div>
+                <div class="musician-config-actions">
+                    <button class="btn-tool-secondary" id="addMusicianConfigBtn" type="button">＋ Agregar integrante</button>
+                    <button class="btn-save advanced-save-btn" id="saveMusiciansConfigBtn" type="button">Guardar equipo e instrumentos</button>
+                </div>
+                <p class="advanced-footnote">La lista se comparte con todos los usuarios de la agenda. Las fechas ya guardadas conservan sus asignaciones históricas; este cambio modifica el selector para las próximas ediciones.</p>
+                <div class="advanced-feedback" id="musiciansConfigFeedback" aria-live="polite"></div>
+                </div>
+            </details>
+
             <section class="card advanced-card">
                 <div class="card-header">
                     <div class="card-title"><div class="dot dot-purple"></div><span>Presentación de esta fecha</span></div>
@@ -610,23 +630,6 @@ export function renderMusicianConfigRow(musician = {}, index = 0) {
                     <div id="advancedPreviewContent"></div>
                 </div>
                 <div class="advanced-feedback" id="specialDateFeedback" aria-live="polite"></div>
-            </section>
-
-            <section class="card advanced-card musician-config-card">
-                <div class="card-header">
-                    <div class="card-title"><div class="dot dot-cyan"></div><span>Músicos e instrumentos</span></div>
-                    <span class="edit-count-pill" id="musiciansConfigCount">${AppState.musiciansConfig.length} ${AppState.musiciansConfig.length === 1 ? 'integrante' : 'integrantes'}</span>
-                </div>
-                <p class="advanced-description">Administrá quiénes aparecen en el selector del equipo y qué instrumentos o funciones puede realizar cada persona. Podés agregar integrantes, cambiar nombres, modificar sus funciones o quitarlos del listado. Separá varias opciones con comas.</p>
-                <div class="musician-config-list" id="musiciansConfigList">
-                    ${musicianConfigRows}
-                </div>
-                <div class="musician-config-actions">
-                    <button class="btn-tool-secondary" id="addMusicianConfigBtn" type="button">＋ Agregar integrante</button>
-                    <button class="btn-save advanced-save-btn" id="saveMusiciansConfigBtn" type="button">Guardar equipo e instrumentos</button>
-                </div>
-                <p class="advanced-footnote">La lista se comparte con todos los usuarios de la agenda. Las fechas ya guardadas conservan sus asignaciones históricas; este cambio modifica el selector para las próximas ediciones.</p>
-                <div class="advanced-feedback" id="musiciansConfigFeedback" aria-live="polite"></div>
             </section>
 
             <section class="card advanced-card special-date-card">
