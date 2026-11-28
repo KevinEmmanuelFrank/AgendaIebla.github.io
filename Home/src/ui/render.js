@@ -615,7 +615,7 @@ export function renderMusicianConfigRow(musician = {}, index = 0) {
             <section class="card advanced-card musician-config-card">
                 <div class="card-header">
                     <div class="card-title"><div class="dot dot-cyan"></div><span>Músicos e instrumentos</span></div>
-                    <span class="edit-count-pill">${AppState.musiciansConfig.length} integrantes</span>
+                    <span class="edit-count-pill" id="musiciansConfigCount">${AppState.musiciansConfig.length} ${AppState.musiciansConfig.length === 1 ? 'integrante' : 'integrantes'}</span>
                 </div>
                 <p class="advanced-description">Administrá quiénes aparecen en el selector del equipo y qué instrumentos o funciones puede realizar cada persona. Podés agregar integrantes, cambiar nombres, modificar sus funciones o quitarlos del listado.</p>
                 <div class="musician-config-list" id="musiciansConfigList">
